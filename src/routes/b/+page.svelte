@@ -1578,7 +1578,7 @@
 
 {$collectReaderImageGallerySpoilerToggles$ ?? ''}
 {$handleUpdateImageGalleryPictureSpoilers$ ?? ''}
-<button class="fixed inset-x-0 top-0 z-10 h-8 w-full" on:click={() => (showHeader = true)} />
+<button class="fixed inset-x-0 top-0 z-10 h-8 w-full" on:click={() => (showHeader = true)}></button>
 {#if showHeader}
   <div
     class="elevation-4 writing-horizontal-tb fixed inset-x-0 top-0 z-10 w-full"
@@ -1779,11 +1779,11 @@
   <div
     class="fixed left-0 z-20 h-[1px] w-full border border-red-500"
     style:top={`${customReadingPointTop}px`}
-  />
+  ></div>
   <div
     class="fixed top-0 z-20 h-full w-[1px] border border-red-500"
     style:left={`${customReadingPointLeft}px`}
-  />
+  ></div>
 {/if}
 
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
@@ -1792,13 +1792,13 @@
     on:click={$verticalMode$ ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
-  />
+  ></button>
   <button
     class="fixed right-0 z-10 w-5"
     on:click={$verticalMode$ ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
-  />
+  ></button>
 {/if}
 
 {#if showSpinner}

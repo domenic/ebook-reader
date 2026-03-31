@@ -20,9 +20,9 @@
         <span class="capitalize">{title}</span>
       {/if}
     </h2>
-    <slot name="header" />
+    <slot name="header"></slot>
   </div>
   <div>
-    <slot />
+    <slot></slot>
   </div>
 </section>

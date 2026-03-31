@@ -145,10 +145,10 @@
     use:conditionalClickHandlerAndClass={!$$slots.icon}
     bind:this={contentElement}
   >
-    <slot />
+    <slot></slot>
   </div>
   <div use:conditionalClickHandlerAndClass={$$slots.icon} bind:this={iconElement}>
-    <slot name="icon" />
+    <slot name="icon"></slot>
   </div>
 </div>
 
@@ -169,7 +169,7 @@
       }}
     >
       {contentText}
-      <slot name="content" />
+      <slot name="content"></slot>
     </div>
   </div>
 {/if}

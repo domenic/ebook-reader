@@ -257,7 +257,7 @@
         <Ripple />
       </button>
     </div>
-    <div class="flex mt-4" />
+    <div class="flex mt-4"></div>
   </div>
   <div class="mt-2 flex grow justify-between" slot="footer">
     <button class={buttonClasses} on:click={() => dispatch('close')}>

@@ -422,7 +422,7 @@
     </div>
   {/each}
   {#if actionInProgress}
-    <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]" />
+    <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]"></div>
     <div class="absolute inset-0 flex h-full w-full items-center justify-center text-7xl">
       <Fa icon={faSpinner} spin />
     </div>

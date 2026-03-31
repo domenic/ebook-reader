@@ -6,9 +6,6 @@ const config = {
   ssr: {
     // https://github.com/FortAwesome/Font-Awesome/issues/18677
     noExternal: ['@fortawesome/*', '@popperjs/*']
-  },
-  experimental: {
-    prebundleSvelteLibraries: true
   }
 };
 

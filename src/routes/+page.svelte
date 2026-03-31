@@ -16,4 +16,4 @@
   <title>{formatPageTitle('Home')}</title>
 </svelte:head>
 
-<div use:observe={autoNavigate$} />
+<div use:observe={autoNavigate$}></div>

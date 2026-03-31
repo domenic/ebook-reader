@@ -1138,7 +1138,7 @@
       style:grid-column={`1/3`}
       style:height={`${dayElementSize * 2}px`}
       style:background-color={'var(--background-color)'}
-    />
+    ></div>
     {#each dayLabels as dayLabel, index (dayLabel)}
       <div
         class="sticky left-0 text-xs sm:text-sm"
@@ -1188,7 +1188,7 @@
           });
         }}
         on:keyup={dummyFn}
-      />
+      ></div>
     {/each}
     {#if popoverDetails.length}
       <Popover yOffset={5} bind:this={heatmapDetailDataPopover}>

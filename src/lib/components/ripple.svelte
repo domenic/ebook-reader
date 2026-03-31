@@ -115,18 +115,18 @@
       style:left="{rippleLeft}px"
       in:animateRipple|local
       on:introend={() => (ripples = [])}
-    />
+    ></span>
   {/each}
   {#if hold}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/25"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
   {#if hold || focus}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/[.10]"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
 </span>

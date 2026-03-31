@@ -716,7 +716,7 @@
   class:ttu-apply-justification={enableTextJustification}
   class:ttu-text-wrap-pretty={enableTextWrapPretty}
   class="book-content m-auto"
-  use:swipe={{ timeframe: 500, minSwipeDistance: $swipeThreshold$, touchAction: 'pan-y' }}
+  use:swipe={() => ({ timeframe: 500, minSwipeDistance: $swipeThreshold$, touchAction: 'pan-y' })}
   on:swipe={onSwipe}
 >
   <div class="book-content-container" id={currentSectionId || null} bind:this={contentEl}>

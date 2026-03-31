@@ -512,7 +512,8 @@
           <Fa icon={faCircleXmark} class="cursor-pointer" />
         </div>
       </Popover>
-      <progress class="mx-4 w-full" value={replicationProgress} max={replicationToProgress} />
+      <progress class="mx-4 w-full" value={replicationProgress} max={replicationToProgress}
+      ></progress>
       <div class="ml-4 min-w-fit">{replicationProgressRemaining}</div>
     </div>
   {/if}

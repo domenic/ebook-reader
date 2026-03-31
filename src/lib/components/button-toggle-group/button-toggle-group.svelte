@@ -56,5 +56,5 @@
     </div>
   {/each}
 
-  <slot />
+  <slot></slot>
 </div>
