@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
 
@@ -23,7 +22,6 @@
   $effect(() => {
     if (target) {
       target.classList.add('relative', 'overflow-hidden');
-      clearEventListeners();
       const el = target;
       addListener(el, 'focusin', () => (focus = true));
       addListener(el, 'focusout', () => (focus = false));
@@ -37,11 +35,9 @@
       addListener(el, 'touchstart', (ev) => createRippleFromTouchEvent(ev, el));
       addListener(el, 'touchend', () => (hold = false));
       addListener(el, 'touchcancel', () => (hold = false));
-    }
-  });
 
-  onDestroy(() => {
-    clearEventListeners();
+      return () => clearEventListeners();
+    }
   });
 
   function addListener<K extends keyof HTMLElementEventMap>(

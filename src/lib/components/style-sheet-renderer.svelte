@@ -7,7 +7,7 @@
 
   let { styleSheet }: Props = $props();
 
-  let styleEl: HTMLStyleElement | undefined;
+  let styleEl: HTMLStyleElement | undefined = $state();
 
   $effect(() => {
     if (styleEl) {

@@ -13,7 +13,7 @@
 
   let { isLoading = $bindable(), fontCache }: Props = $props();
 
-  let fileElement: HTMLInputElement;
+  let fileElement: HTMLInputElement = $state(undefined!);
   let fontName = $state('');
   let fontFile: File | undefined = $state();
   let currentError = $state('no error');

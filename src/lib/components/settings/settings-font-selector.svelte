@@ -12,7 +12,7 @@
 
   let { availableFonts = [LocalFont.NOTOSANSJP], fontValue = $bindable('') }: Props = $props();
 
-  let element: Popover;
+  let element: Popover = $state(undefined!);
 </script>
 
 <Popover bind:this={element} placement="bottom">
