@@ -1572,6 +1572,13 @@
   }
 </script>
 
+{$initBookmarkData$ ?? ''}
+{$setBackgroundColor$ ?? ''}
+{$setWritingMode$ ?? ''}
+{$textSelector$ ?? ''}
+{$replicator$ ?? ''}
+{$autoStartTracker$ ?? ''}
+
 <svelte:head>
   <title>{formatPageTitle($rawBookData$?.title ?? '')}</title>
 </svelte:head>
@@ -1735,12 +1742,6 @@
     onbookmark={bookmarkPage}
     ontrackerPause={() => pauseTracker(true)}
   />
-  {$initBookmarkData$ ?? ''}
-  {$setBackgroundColor$ ?? ''}
-  {$setWritingMode$ ?? ''}
-  {$textSelector$ ?? ''}
-  {$replicator$ ?? ''}
-  {$autoStartTracker$ ?? ''}
 {:else}
   {$leaveIfBookMissing$ ?? ''}
 {/if}
