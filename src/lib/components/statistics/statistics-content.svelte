@@ -809,7 +809,7 @@
 {$exportStatisticsDataHandler$ ?? ''}
 {$deleteStatisticsDataHandler$ ?? ''}
 {$setStatisticsDatesToAllTimeHandler$ ?? ''}
-<svelte:window on:keyup={onKeyUp} />
+<svelte:window onkeyup={onKeyUp} />
 {#if isLoading}
   <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
     <Fa icon={faSpinner} spin />

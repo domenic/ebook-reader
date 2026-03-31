@@ -110,12 +110,12 @@
       tabindex="0"
       role="button"
       class="tap-highlight-transparent absolute inset-0 bg-black/[.32]"
-      on:click={() => {
+      onclick={() => {
         if (!clickOnCloseDisabled) {
           closeAllDialogs();
         }
       }}
-      on:keyup={dummyFn}
+      onkeyup={dummyFn}
     ></div>
 
     <div

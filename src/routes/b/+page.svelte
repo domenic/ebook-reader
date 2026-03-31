@@ -1585,7 +1585,7 @@
 
 {$collectReaderImageGallerySpoilerToggles$ ?? ''}
 {$handleUpdateImageGalleryPictureSpoilers$ ?? ''}
-<button class="fixed inset-x-0 top-0 z-10 h-8 w-full" on:click={() => (showHeader = true)}></button>
+<button class="fixed inset-x-0 top-0 z-10 h-8 w-full" onclick={() => (showHeader = true)}></button>
 {#if showHeader}
   <div
     class="elevation-4 writing-horizontal-tb fixed inset-x-0 top-0 z-10 w-full"
@@ -1790,13 +1790,13 @@
 {#if $enableTapEdgeToFlip$ && isPaginated && !$skipKeyDownListener$}
   <button
     class="fixed left-0 z-10 w-5"
-    on:click={$verticalMode$ ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
+    onclick={$verticalMode$ ? () => pageManager?.nextPage() : () => pageManager?.prevPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   ></button>
   <button
     class="fixed right-0 z-10 w-5"
-    on:click={$verticalMode$ ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
+    onclick={$verticalMode$ ? () => pageManager?.prevPage() : () => pageManager?.nextPage()}
     style:height={tapButtonHeight}
     style:top={tapButtonTop}
   ></button>
@@ -1814,8 +1814,8 @@
   role="button"
   class="writing-horizontal-tb fixed bottom-0 left-0 z-10 flex h-8 w-full items-center justify-between text-xs leading-none"
   style:color={$themeOption$?.tooltipTextFontColor}
-  on:click={() => (showFooter = !showFooter)}
-  on:keyup={dummyFn}
+  onclick={() => (showFooter = !showFooter)}
+  onkeyup={dummyFn}
 >
   <div class="flex h-full">
     {#if showTrackerIcon}
@@ -1837,7 +1837,8 @@
         class="flex h-full w-8 items-center justify-center text-sm sm:text-lg"
         class:text-red-500={externalStorageErrors > 1}
         class:animate-pulse={externalStorageErrors > 1 || isReplicating}
-        on:click|stopPropagation={() => {
+        onclick={(e) => {
+          e.stopPropagation();
           if ($statisticsEnabled$) {
             wasTrackerPaused = $isTrackerPaused$;
             isTrackerPaused$.next(true);
@@ -1849,7 +1850,7 @@
             }
           });
         }}
-        on:keyup={dummyFn}
+        onkeyup={dummyFn}
       >
         <Fa icon={faCloudBolt} />
       </div>
@@ -1873,18 +1874,20 @@
         !$showFooterChapterCharacterCounter$ &&
         !$showFooterChapterPercentage$}
       style:color={$themeOption$?.tooltipTextFontColor}
-      on:click|stopPropagation={({ target }) => {
+      onclick={(e) => {
+        e.stopPropagation();
         if (!$showCharacterCounter$ && !$showPercentage$) {
           return;
         }
 
         copyCurrentProgress(currentProgress.replace(/ T$/, ''));
 
+        const target = e.target;
         if (target instanceof HTMLElement) {
           pulseElement(target.parentElement || target, 'add', 0.5, 500);
         }
       }}
-      on:keyup={dummyFn}
+      onkeyup={dummyFn}
     >
       <span class="mr-4" class:invisible={!footerChapterProgress}>{footerChapterProgress}</span>
       <span class:invisible={!$showCharacterCounter$ && !$showPercentage$}>{currentProgress}</span>
@@ -1897,9 +1900,9 @@
 {/if}
 
 <svelte:window
-  on:keydown={onKeydown}
-  on:beforeunload={handleUnload}
-  on:resize={() => {
+  onkeydown={onKeydown}
+  onbeforeunload={handleUnload}
+  onresize={() => {
     if ($statisticsEnabled$ && !$isTrackerPaused$) {
       pauseTracker();
 

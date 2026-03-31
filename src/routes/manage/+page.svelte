@@ -670,11 +670,13 @@
   tabindex="0"
   role="button"
   class="{pxScreen} h-full pt-16 xl:pt-14"
-  on:dragenter={(ev) => ev.preventDefault()}
-  on:dragover={(ev) => ev.preventDefault()}
-  on:dragend={(ev) => ev.preventDefault()}
-  on:drop={(ev) => ev.preventDefault()}
-  on:drop={(ev) => getDropEventFiles(ev).then(onFilesChange)}
+  ondragenter={(ev) => ev.preventDefault()}
+  ondragover={(ev) => ev.preventDefault()}
+  ondragend={(ev) => ev.preventDefault()}
+  ondrop={(ev) => {
+    ev.preventDefault();
+    getDropEventFiles(ev).then(onFilesChange);
+  }}
 >
   {#if !$bookCards$ || $booksAreLoading$}
     Loading...
