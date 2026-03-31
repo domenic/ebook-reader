@@ -1597,20 +1597,20 @@
       autoScrollMultiplier={$multiplier$}
       {hasBookmarkData}
       bind:isBookmarkScreen
-      on:tocClick={() => {
+      ontocClick={() => {
         pauseTracker();
 
         showHeader = false;
         tocIsOpen$.next(true);
       }}
-      on:jumpClick={handleJump}
-      on:completeBook={completeBook}
-      on:setCustomReadingPoint={handleSetCustomReadingPoint}
-      on:showCustomReadingPoint={() => {
+      onjumpClick={handleJump}
+      oncompleteBook={completeBook}
+      onsetCustomReadingPoint={handleSetCustomReadingPoint}
+      onshowCustomReadingPoint={() => {
         showHeader = false;
         showCustomReadingPoint = true;
       }}
-      on:resetCustomReadingPoint={() => {
+      onresetCustomReadingPoint={() => {
         showHeader = false;
 
         if ($pauseTrackerOnCustomPointChange$) {
@@ -1631,25 +1631,25 @@
           restartTrackerAfterCharacterChangeOrTime(1000);
         }
       }}
-      on:fullscreenClick={onFullscreenClick}
-      on:bookmarkClick={bookmarkPage}
-      on:scrollToBookmarkClick={() => {
+      onfullscreenClick={onFullscreenClick}
+      onbookmarkClick={bookmarkPage}
+      onscrollToBookmarkClick={() => {
         showHeader = false;
         scrollToBookmark();
       }}
-      on:statisticsClick={() => {
+      onstatisticsClick={() => {
         if ($rawBookData$) {
           $preFilteredTitlesForStatistics$ = new Set([$rawBookData$.title]);
         }
 
         leaveReader(mergeEntries.STATISTICS.routeId, false);
       }}
-      on:readerImageGalleryClick={() => {
+      onreaderImageGalleryClick={() => {
         showHeader = false;
         showReaderImageGallery = true;
       }}
-      on:settingsClick={() => leaveReader(mergeEntries.SETTINGS.routeId, false)}
-      on:bookManagerClick={() => leaveReader(mergeEntries.MANAGE.routeId)}
+      onsettingsClick={() => leaveReader(mergeEntries.SETTINGS.routeId, false)}
+      onbookManagerClick={() => leaveReader(mergeEntries.MANAGE.routeId)}
     />
   </div>
 {/if}
@@ -1732,8 +1732,8 @@
     bind:customReadingPointScrollOffset
     bind:customReadingPointRange
     bind:showCustomReadingPoint
-    on:bookmark={bookmarkPage}
-    on:trackerPause={() => pauseTracker(true)}
+    onbookmark={bookmarkPage}
+    ontrackerPause={() => pauseTracker(true)}
   />
   {$initBookmarkData$ ?? ''}
   {$setBackgroundColor$ ?? ''}

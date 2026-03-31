@@ -12,24 +12,39 @@
   import Fa from 'svelte-fa';
   import { fly } from 'svelte/transition';
 
-  export let fontColor: string;
-  export let backgroundColor: string;
-  export let onclose: (() => void) | undefined = undefined;
-
-  let contentContainer: HTMLElement;
-  let imageContainer: HTMLElement;
-  let selectedImageIndex = window.matchMedia('(min-width: 1024px)').matches ? 0 : -1;
-
-  $: selectedImage = $readerImageGalleryPictures$[selectedImageIndex];
-
-  $: if (imageContainer && selectedImage) {
-    imageContainer.focus();
+  interface Props {
+    fontColor: string;
+    backgroundColor: string;
+    onclose?: () => void;
   }
+
+  let { fontColor, backgroundColor, onclose }: Props = $props();
+
+  let contentContainer: HTMLElement = $state(undefined as any);
+  let imageContainer: HTMLElement = $state(undefined as any);
+  let selectedImageIndex = $state(window.matchMedia('(min-width: 1024px)').matches ? 0 : -1);
+
+  let selectedImage = $derived($readerImageGalleryPictures$[selectedImageIndex]);
+
+  $effect(() => {
+    if (imageContainer && selectedImage) {
+      imageContainer.focus();
+    }
+  });
 
   onMount(() => {
     $skipKeyDownListener$ = true;
 
-    return () => ($skipKeyDownListener$ = false);
+    const handleWheel = (ev: WheelEvent) => {
+      onWheel(ev);
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      $skipKeyDownListener$ = false;
+      window.removeEventListener('wheel', handleWheel);
+    };
   });
 
   function onKeyDown(ev: KeyboardEvent) {
@@ -78,10 +93,6 @@
 
       return picture;
     });
-
-    if (selectedImageIndex !== -1) {
-      selectedImage = { ...$readerImageGalleryPictures$[selectedImageIndex] };
-    }
   }
 
   function previousImage() {
@@ -117,7 +128,7 @@
   }
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:wheel|nonpassive={onWheel} />
+<svelte:window onkeydown={onKeyDown} />
 <div
   class="flex h-full w-full writing-horizontal-tb fixed top-0 left-0 z-[60]"
   style:color={fontColor}
@@ -136,7 +147,7 @@
       <button
         title="Close Image Gallery"
         class="flex items-end md:items-center"
-        on:click={closeReaderImageGallery}
+        onclick={closeReaderImageGallery}
       >
         <Fa icon={faXmark} />
       </button>
@@ -148,7 +159,7 @@
           class="flex justify-center my-4"
           class:spoiler={showSpoiler}
           data-image-index={urlIndex}
-          on:click={() => {
+          onclick={() => {
             if (window.matchMedia('(min-width: 1024px)').matches) {
               selectedImageIndex = urlIndex;
             }
@@ -164,7 +175,7 @@
               title="Show Image"
               class="spoiler-label"
               aria-hidden="true"
-              on:click={() => toggleGalleryPictureSpoiler(readerImageGalleryPicture.url)}
+              onclick={() => toggleGalleryPictureSpoiler(readerImageGalleryPicture.url)}
             >
               ネタバレ
             </button>
@@ -185,7 +196,7 @@
           title="Previous Image"
           class="mx-4 text-5xl hover:text-red-500"
           class:invisible={!selectedImageIndex}
-          on:click={previousImage}
+          onclick={previousImage}
         >
           <Fa icon={faChevronLeft} />
         </button>
@@ -196,7 +207,7 @@
               title="Show Image"
               class="spoiler-label"
               aria-hidden="true"
-              on:click={() => toggleGalleryPictureSpoiler(selectedImage.url)}
+              onclick={() => toggleGalleryPictureSpoiler(selectedImage.url)}
             >
               ネタバレ
             </button>
@@ -206,7 +217,7 @@
           title="Next Image"
           class="mx-4 text-5xl hover:text-red-500"
           class:invisible={selectedImageIndex === $readerImageGalleryPictures$.length - 1}
-          on:click={nextImage}
+          onclick={nextImage}
         >
           <Fa icon={faChevronRight} />
         </button>
