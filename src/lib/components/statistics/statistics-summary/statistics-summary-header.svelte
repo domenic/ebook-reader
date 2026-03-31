@@ -66,20 +66,22 @@
       bind:this={summaryHeaderPopover}
     >
       <div {title}>{selectedOption.label}</div>
-      <div slot="content" class="flex flex-col overflow-auto w-46 p-2">
-        {#each options as option (option.key)}
-          <button
-            class="flex flex-1 my-2 hover:opacity-50 hover:bg-slate-300 hover:text-black"
-            onclick={(e) => {
-              e.stopPropagation();
-              onpropertyChange?.({ property: option.key, statisticsSummaryKey });
-              summaryHeaderPopover.toggleOpen();
-            }}
-          >
-            {option.label}
-          </button>
-        {/each}
-      </div>
+      {#snippet content()}
+        <div class="flex flex-col overflow-auto w-46 p-2">
+          {#each options as option (option.key)}
+            <button
+              class="flex flex-1 my-2 hover:opacity-50 hover:bg-slate-300 hover:text-black"
+              onclick={(e) => {
+                e.stopPropagation();
+                onpropertyChange?.({ property: option.key, statisticsSummaryKey });
+                summaryHeaderPopover.toggleOpen();
+              }}
+            >
+              {option.label}
+            </button>
+          {/each}
+        </div>
+      {/snippet}
     </Popover>
   {:else}
     <button

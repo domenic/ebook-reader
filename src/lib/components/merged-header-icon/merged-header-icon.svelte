@@ -70,23 +70,27 @@
       yOffset={0}
       bind:this={menuElm}
     >
-      <div slot="icon" class={baseIconClasses}>
-        <Fa icon={mergeTo.icon} />
-      </div>
-      <div class="w-40 bg-gray-700 md:w-32" slot="content">
-        {#each actionItems as actionItem (actionItem.label)}
-          <div
-            tabindex="0"
-            role="button"
-            class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-            title={actionItem.title}
-            on:click={() => handleActionMenuItem(actionItem.label)}
-            on:keyup={dummyFn}
-          >
-            {actionItem.label}
-          </div>
-        {/each}
-      </div>
+      {#snippet icon()}
+        <div class={baseIconClasses}>
+          <Fa icon={mergeTo.icon} />
+        </div>
+      {/snippet}
+      {#snippet content()}
+        <div class="w-40 bg-gray-700 md:w-32">
+          {#each actionItems as actionItem (actionItem.label)}
+            <div
+              tabindex="0"
+              role="button"
+              class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+              title={actionItem.title}
+              on:click={() => handleActionMenuItem(actionItem.label)}
+              on:keyup={dummyFn}
+            >
+              {actionItem.label}
+            </div>
+          {/each}
+        </div>
+      {/snippet}
     </Popover>
   </div>
 {/if}

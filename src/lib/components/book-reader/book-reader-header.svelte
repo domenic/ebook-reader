@@ -141,23 +141,27 @@
           yOffset={0}
           bind:this={customReadingPointMenuElm}
         >
-          <div slot="icon" title="Open Custom Point Actions" class={labelIconClasses}>
-            <Fa icon={faCrosshairs} class="text-sm xl:text-xs" />
-            <span>Point&nbsp;▾</span>
-          </div>
-          <div class="w-40 bg-gray-700 md:w-32" slot="content">
-            {#each customReadingPointMenuItems as actionItem (actionItem.label)}
-              <div
-                tabindex="0"
-                role="button"
-                class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                on:click={() => dispatchCustomReadingPointAction(actionItem.action)}
-                on:keyup={dummyFn}
-              >
-                {actionItem.label}
-              </div>
-            {/each}
-          </div>
+          {#snippet icon()}
+            <div title="Open Custom Point Actions" class={labelIconClasses}>
+              <Fa icon={faCrosshairs} class="text-sm xl:text-xs" />
+              <span>Point&nbsp;▾</span>
+            </div>
+          {/snippet}
+          {#snippet content()}
+            <div class="w-40 bg-gray-700 md:w-32">
+              {#each customReadingPointMenuItems as actionItem (actionItem.label)}
+                <div
+                  tabindex="0"
+                  role="button"
+                  class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+                  on:click={() => dispatchCustomReadingPointAction(actionItem.action)}
+                  on:keyup={dummyFn}
+                >
+                  {actionItem.label}
+                </div>
+              {/each}
+            </div>
+          {/snippet}
         </Popover>
       </div>
       <div class={headerDividerClasses}></div>

@@ -16,23 +16,27 @@
 </script>
 
 <Popover bind:this={element} placement="bottom">
-  <div slot="icon" class="mx-2" title="Show available default Fonts">
-    <Fa icon={faFont} />
-  </div>
-  <div slot="content">
-    {#each availableFonts as font (font)}
-      <div
-        tabindex="0"
-        role="button"
-        class="px-4 py-2 hover:bg-gray-900"
-        onclick={() => {
-          fontValue = font;
-          element.toggleOpen();
-        }}
-        onkeyup={dummyFn}
-      >
-        {font}
-      </div>
-    {/each}
-  </div>
+  {#snippet icon()}
+    <div class="mx-2" title="Show available default Fonts">
+      <Fa icon={faFont} />
+    </div>
+  {/snippet}
+  {#snippet content()}
+    <div>
+      {#each availableFonts as font (font)}
+        <div
+          tabindex="0"
+          role="button"
+          class="px-4 py-2 hover:bg-gray-900"
+          onclick={() => {
+            fontValue = font;
+            element.toggleOpen();
+          }}
+          onkeyup={dummyFn}
+        >
+          {font}
+        </div>
+      {/each}
+    </div>
+  {/snippet}
 </Popover>

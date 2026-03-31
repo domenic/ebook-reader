@@ -369,51 +369,55 @@
               yOffset={0}
               bind:this={storageSourceElm}
             >
-              <div slot="icon">
-                {#key $storageIcon$}
-                  <div class={labelIconClasses}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox={$storageIcon$.viewBox}
-                      class="h-3.5 w-3.5 xl:h-3 xl:w-3"
-                    >
-                      <path class="fill-current" d={$storageIcon$.d} />
-                    </svg>
-                    <span>Storage Source&nbsp;▾</span>
-                  </div>
-                {/key}
-              </div>
-              <div class="w-28 bg-gray-700" slot="content">
-                {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
-                  <div
-                    tabindex="0"
-                    role="button"
-                    class="cursor-pointer px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
-                    class:hover:bg-white={!sourceMenuItem.requiresConnectivity || $isOnline$}
-                    class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
-                    class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                    class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
-                    on:click={async () => {
-                      if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
-                        return;
-                      }
-
-                      if (sourceMenuItem.key !== $storageSource$) {
-                        if (!$cacheStorageData$) {
-                          getStorageHandler(window, sourceMenuItem.key).clearData();
+              {#snippet icon()}
+                <div>
+                  {#key $storageIcon$}
+                    <div class={labelIconClasses}>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox={$storageIcon$.viewBox}
+                        class="h-3.5 w-3.5 xl:h-3 xl:w-3"
+                      >
+                        <path class="fill-current" d={$storageIcon$.d} />
+                      </svg>
+                      <span>Storage Source&nbsp;▾</span>
+                    </div>
+                  {/key}
+                </div>
+              {/snippet}
+              {#snippet content()}
+                <div class="w-28 bg-gray-700">
+                  {#each storageSourceMenuItems as sourceMenuItem (sourceMenuItem.key)}
+                    <div
+                      tabindex="0"
+                      role="button"
+                      class="cursor-pointer px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
+                      class:hover:bg-white={!sourceMenuItem.requiresConnectivity || $isOnline$}
+                      class:hover:text-gray-700={!sourceMenuItem.requiresConnectivity || $isOnline$}
+                      class:cursor-not-allowed={sourceMenuItem.requiresConnectivity && !$isOnline$}
+                      class:text-gray-500={sourceMenuItem.requiresConnectivity && !$isOnline$}
+                      on:click={async () => {
+                        if (sourceMenuItem.requiresConnectivity && !$isOnline$) {
+                          return;
                         }
 
-                        storageSource$.next(sourceMenuItem.key);
-                      }
+                        if (sourceMenuItem.key !== $storageSource$) {
+                          if (!$cacheStorageData$) {
+                            getStorageHandler(window, sourceMenuItem.key).clearData();
+                          }
 
-                      storageSourceElm.toggleOpen();
-                    }}
-                    on:keyup={dummyFn}
-                  >
-                    {sourceMenuItem.label}
-                  </div>
-                {/each}
-              </div>
+                          storageSource$.next(sourceMenuItem.key);
+                        }
+
+                        storageSourceElm.toggleOpen();
+                      }}
+                      on:keyup={dummyFn}
+                    >
+                      {sourceMenuItem.label}
+                    </div>
+                  {/each}
+                </div>
+              {/snippet}
             </Popover>
           </div>
           <div
@@ -427,61 +431,65 @@
               yOffset={0}
               bind:this={sortOptionsElm}
             >
-              <div slot="icon" class={labelIconClasses} title="Select Sort Options">
-                {#if $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
-                  <Fa icon={faArrowDownShortWide} class="text-sm xl:text-xs" />
-                {:else}
-                  <Fa icon={faArrowDownWideShort} class="text-sm xl:text-xs" />
-                {/if}
-                <span>Sort&nbsp;▾</span>
-              </div>
-              <div class="w-44 bg-gray-700" slot="content">
-                {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
-                  {@const isCurrentSort =
-                    $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
-                  {@const isCurrentSortAsc =
-                    isCurrentSort &&
-                    $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
-                  <div
-                    class="grid cursor-default grid-cols-[auto_auto_auto] text-sm hover:bg-white hover:text-gray-700"
-                    class:bg-white={isCurrentSort}
-                    class:text-gray-700={isCurrentSort}
-                    class:hover:opacity-70={isCurrentSort}
-                  >
+              {#snippet icon()}
+                <div class={labelIconClasses} title="Select Sort Options">
+                  {#if $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
+                    <Fa icon={faArrowDownShortWide} class="text-sm xl:text-xs" />
+                  {:else}
+                    <Fa icon={faArrowDownWideShort} class="text-sm xl:text-xs" />
+                  {/if}
+                  <span>Sort&nbsp;▾</span>
+                </div>
+              {/snippet}
+              {#snippet content()}
+                <div class="w-44 bg-gray-700">
+                  {#each sortMenuItems as sortMenuItem (sortMenuItem.property)}
+                    {@const isCurrentSort =
+                      $booklistSortOptions$[$storageSource$].property === sortMenuItem.property}
+                    {@const isCurrentSortAsc =
+                      isCurrentSort &&
+                      $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
                     <div
-                      tabindex="0"
-                      role="button"
-                      class="self-center justify-self-start"
-                      class:text-red-500={isCurrentSortAsc}
-                      class:hover:text-gray-700={isCurrentSortAsc}
-                      class:hover:text-red-500={!isCurrentSortAsc}
-                      on:click={() => {
-                        changeSortOptions(sortMenuItem.property, SortDirection.ASC);
-                      }}
-                      on:keyup={() => {}}
+                      class="grid cursor-default grid-cols-[auto_auto_auto] text-sm hover:bg-white hover:text-gray-700"
+                      class:bg-white={isCurrentSort}
+                      class:text-gray-700={isCurrentSort}
+                      class:hover:opacity-70={isCurrentSort}
                     >
-                      <Fa icon={faSortUp} class="px-4" />
+                      <div
+                        tabindex="0"
+                        role="button"
+                        class="self-center justify-self-start"
+                        class:text-red-500={isCurrentSortAsc}
+                        class:hover:text-gray-700={isCurrentSortAsc}
+                        class:hover:text-red-500={!isCurrentSortAsc}
+                        on:click={() => {
+                          changeSortOptions(sortMenuItem.property, SortDirection.ASC);
+                        }}
+                        on:keyup={() => {}}
+                      >
+                        <Fa icon={faSortUp} class="px-4" />
+                      </div>
+                      <div class="py-2">
+                        {sortMenuItem.label}
+                      </div>
+                      <div
+                        tabindex="0"
+                        role="button"
+                        class="justify-self-end hover:text-red-500"
+                        class:text-red-500={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
+                        class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
+                        on:click={() => {
+                          changeSortOptions(sortMenuItem.property, SortDirection.DESC);
+                        }}
+                        on:keyup={() => {}}
+                      >
+                        <Fa icon={faSortDown} class="mt-1 px-4" />
+                      </div>
                     </div>
-                    <div class="py-2">
-                      {sortMenuItem.label}
-                    </div>
-                    <div
-                      tabindex="0"
-                      role="button"
-                      class="justify-self-end hover:text-red-500"
-                      class:text-red-500={isCurrentSort && !isCurrentSortAsc}
-                      class:hover:text-gray-700={isCurrentSort && !isCurrentSortAsc}
-                      class:hover:text-red-500={!isCurrentSort || isCurrentSortAsc}
-                      on:click={() => {
-                        changeSortOptions(sortMenuItem.property, SortDirection.DESC);
-                      }}
-                      on:keyup={() => {}}
-                    >
-                      <Fa icon={faSortDown} class="mt-1 px-4" />
-                    </div>
-                  </div>
-                {/each}
-              </div>
+                  {/each}
+                </div>
+              {/snippet}
             </Popover>
           </div>
           <div class={headerDividerClasses}></div>

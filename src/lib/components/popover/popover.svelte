@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { browser } from '$app/environment';
   import { popovers } from '$lib/components/popover/popover';
   import { CLOSE_POPOVER } from '$lib/data/events';
@@ -7,37 +8,61 @@
   import flip from '@popperjs/core/lib/modifiers/flip';
   import offset from '@popperjs/core/lib/modifiers/offset';
   import { createPopper } from '@popperjs/core/lib/popper-lite';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { tick } from 'svelte';
 
-  export let contentText = '';
-  export let containerStyles = '';
-  export let innerContainerStyles = '';
-  export let contentStyles = 'padding: 0';
-  export let eventType = 'click';
-  export let fallbackPlacements = ['left', 'bottom', 'right'];
-  export let placement: Placement = 'top';
-  export let singlePopover = true;
-  export let xOffset = 0;
-  export let yOffset = 10;
+  interface Props {
+    contentText?: string;
+    containerStyles?: string;
+    innerContainerStyles?: string;
+    contentStyles?: string;
+    eventType?: string;
+    fallbackPlacements?: string[];
+    placement?: Placement;
+    singlePopover?: boolean;
+    xOffset?: number;
+    yOffset?: number;
+    onopen?: () => void;
+    children?: Snippet;
+    icon?: Snippet;
+    content?: Snippet;
+  }
 
-  const dispatch = createEventDispatcher<{
-    open: void;
-  }>();
+  let {
+    contentText = '',
+    containerStyles = '',
+    innerContainerStyles = '',
+    contentStyles = 'padding: 0',
+    eventType = 'click',
+    fallbackPlacements = ['left', 'bottom', 'right'],
+    placement = 'top',
+    singlePopover = true,
+    xOffset = 0,
+    yOffset = 10,
+    onopen,
+    children,
+    icon: iconSnippet,
+    content: contentSnippet
+  }: Props = $props();
 
-  let contentElement: HTMLElement;
-  let iconElement: HTMLElement;
-  let popoverElement: HTMLElement;
+  let contentElement: HTMLElement = $state();
+  let iconElement: HTMLElement = $state();
+  let popoverElement: HTMLElement = $state();
 
   let id: symbol;
   let instance: Instance;
-  let isOpen = false;
+  let isOpen = $state(false);
 
-  $: if (browser) {
-    id = Symbol('popover');
-  }
-  $: if (isOpen && singlePopover && !$popovers.includes(id)) {
-    isOpen = false;
-  }
+  $effect(() => {
+    if (browser) {
+      id = Symbol('popover');
+    }
+  });
+
+  $effect(() => {
+    if (isOpen && singlePopover && !$popovers.includes(id)) {
+      isOpen = false;
+    }
+  });
 
   export async function toggleOpen(referenceElement?: HTMLElement | Event) {
     if (isOpen) {
@@ -58,7 +83,7 @@
         // no-op
       });
       await tick();
-      dispatch('open');
+      onopen?.();
     } else if (isOpen) {
       instance = createPopper(getTargetElement(referenceElement), popoverElement, {
         placement,
@@ -81,7 +106,7 @@
       });
 
       await tick();
-      dispatch('open');
+      onopen?.();
     }
   }
 
@@ -132,7 +157,7 @@
     if (referenceElement instanceof HTMLElement) {
       targetElement = referenceElement;
     } else {
-      targetElement = $$slots.icon ? iconElement : contentElement;
+      targetElement = iconSnippet ? iconElement : contentElement;
     }
 
     return targetElement;
@@ -142,13 +167,13 @@
 <div data-popover class="flex items-center" style={containerStyles}>
   <div
     style={innerContainerStyles}
-    use:conditionalClickHandlerAndClass={!$$slots.icon}
+    use:conditionalClickHandlerAndClass={!iconSnippet}
     bind:this={contentElement}
   >
-    <slot></slot>
+    {@render children?.()}
   </div>
-  <div use:conditionalClickHandlerAndClass={$$slots.icon} bind:this={iconElement}>
-    <slot name="icon"></slot>
+  <div use:conditionalClickHandlerAndClass={!!iconSnippet} bind:this={iconElement}>
+    {@render iconSnippet?.()}
   </div>
 </div>
 
@@ -169,7 +194,7 @@
       }}
     >
       {contentText}
-      <slot name="content"></slot>
+      {@render contentSnippet?.()}
     </div>
   </div>
 {/if}

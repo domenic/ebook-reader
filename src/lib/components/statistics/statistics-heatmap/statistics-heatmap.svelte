@@ -1192,23 +1192,24 @@
     {/each}
     {#if popoverDetails.length}
       <Popover yOffset={5} bind:this={heatmapDetailDataPopover}>
-        <div
-          slot="content"
-          class="p-2"
-          class:w-36={heatmapType === HeatmapType.STATISTICS}
-          class:w-42={heatmapType === HeatmapType.READING_GOALS}
-        >
-          <button
-            title="Close Details"
-            class="flex w-full justify-end absolute right-2"
-            on:click={() => (popoverDetails = [])}
+        {#snippet content()}
+          <div
+            class="p-2"
+            class:w-36={heatmapType === HeatmapType.STATISTICS}
+            class:w-42={heatmapType === HeatmapType.READING_GOALS}
           >
-            <Fa icon={faClose} />
-          </button>
-          {#each popoverDetails as popoverDetail (popoverDetail)}
-            <div class="mb-2 last:mb-0">{popoverDetail}</div>
-          {/each}
-        </div>
+            <button
+              title="Close Details"
+              class="flex w-full justify-end absolute right-2"
+              on:click={() => (popoverDetails = [])}
+            >
+              <Fa icon={faClose} />
+            </button>
+            {#each popoverDetails as popoverDetail (popoverDetail)}
+              <div class="mb-2 last:mb-0">{popoverDetail}</div>
+            {/each}
+          </div>
+        {/snippet}
       </Popover>
     {/if}
   </div>

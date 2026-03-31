@@ -46,10 +46,10 @@
       {#if option.showIcons && option.id === selectedOptionId && !availableThemes.has(option.id)}
         <div class="flex flex-col justify-around mr-2">
           <button on:click={() => dispatch('edit', option.id)}>
-            <Fa icon={faPen} slot="icon" />
+            <Fa icon={faPen} />
           </button>
           <button on:click={() => dispatch('delete', option.id)}>
-            <Fa icon={faTrash} slot="icon" />
+            <Fa icon={faTrash} />
           </button>
         </div>
       {/if}

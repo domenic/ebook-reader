@@ -221,14 +221,18 @@
         <span class="capitalize">Storage Sources</span>
       </h1>
       <Popover contentText={listTooltip} contentStyles="padding: 0.5rem;">
-        <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
       </Popover>
       {#if $autoReplication$ !== AutoReplicationType.Off && !$syncTarget$}
         <Popover
           contentText={'Auto import/export enabled but no source as sync target from list selected'}
           contentStyles="padding: 0.25rem;"
         >
-          <Fa icon={faTriangleExclamation} slot="icon" class="mx-2" />
+          {#snippet icon()}
+            <Fa icon={faTriangleExclamation} class="mx-2" />
+          {/snippet}
         </Popover>
       {/if}
     </div>

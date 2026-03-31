@@ -63,21 +63,24 @@
       {#if selectedBookIds.has(bookCard.id)}
         <div class="absolute top-10 left-2" title="Click to open details">
           <Popover placement="right" fallbackPlacements={['bottom']} yOffset={5}>
-            <Fa
-              slot="icon"
-              class="mdc-elevation--z2 hover:mdc-elevation--z8 mdc-elevation-transition left-2 top-10 rounded-full bg-blue-400 text-xl text-white"
-              icon={faCircleInfo}
-            />
-            <div class="p-4" slot="content">
-              <div>Characters:</div>
-              <div class="w-40">{bookCard.characters || 'No Data'}</div>
-              <div class="mt-4">Last Read:</div>
-              <div class="w-40">{getCardDateInfo(bookCard.lastBookOpen)}</div>
-              <div class="mt-4">Bookmarked:</div>
-              <div class="w-40">{getCardDateInfo(bookCard.lastBookmarkModified)}</div>
-              <div class="mt-4">Last Update:</div>
-              <div class="w-40">{getCardDateInfo(bookCard.lastBookModified)}</div>
-            </div>
+            {#snippet icon()}
+              <Fa
+                class="mdc-elevation--z2 hover:mdc-elevation--z8 mdc-elevation-transition left-2 top-10 rounded-full bg-blue-400 text-xl text-white"
+                icon={faCircleInfo}
+              />
+            {/snippet}
+            {#snippet content()}
+              <div class="p-4">
+                <div>Characters:</div>
+                <div class="w-40">{bookCard.characters || 'No Data'}</div>
+                <div class="mt-4">Last Read:</div>
+                <div class="w-40">{getCardDateInfo(bookCard.lastBookOpen)}</div>
+                <div class="mt-4">Bookmarked:</div>
+                <div class="w-40">{getCardDateInfo(bookCard.lastBookmarkModified)}</div>
+                <div class="mt-4">Last Update:</div>
+                <div class="w-40">{getCardDateInfo(bookCard.lastBookModified)}</div>
+              </div>
+            {/snippet}
           </Popover>
         </div>
       {/if}

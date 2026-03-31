@@ -20,7 +20,9 @@
     <h2 class="mb-2" class:text-xl={applyHeaderClasses} class:font-medium={applyHeaderClasses}>
       {#if tooltip}
         <Popover contentText={tooltip} contentStyles="padding: 0.5rem;">
-          <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+          {#snippet icon()}
+            <Fa icon={faCircleQuestion} class="mx-2" />
+          {/snippet}
           <span class="capitalize">{title}</span>
         </Popover>
       {:else}

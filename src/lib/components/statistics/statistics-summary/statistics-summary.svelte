@@ -582,17 +582,19 @@
         containerStyles={`align-self:flex-start;display:${isDateAggregation ? 'none' : 'flex'}`}
         bind:this={statisticsSummaryPopover}
       >
-        <div slot="content" class="p-4">
-          <button
-            class="flex w-full justify-end absolute top-1 right-2"
-            on:click={() => (statisticsSummaryPopoverDetails = [])}
-          >
-            <Fa icon={faClose} />
-          </button>
-          {#each statisticsSummaryPopoverDetails as popoverDetail (popoverDetail)}
-            <div class="mb-2 last:mb-0">{popoverDetail}</div>
-          {/each}
-        </div>
+        {#snippet content()}
+          <div class="p-4">
+            <button
+              class="flex w-full justify-end absolute top-1 right-2"
+              on:click={() => (statisticsSummaryPopoverDetails = [])}
+            >
+              <Fa icon={faClose} />
+            </button>
+            {#each statisticsSummaryPopoverDetails as popoverDetail (popoverDetail)}
+              <div class="mb-2 last:mb-0">{popoverDetail}</div>
+            {/each}
+          </div>
+        {/snippet}
       </Popover>
     {/if}
   {:else}
@@ -617,7 +619,7 @@
   </button>
   <Popover
     yOffset={5}
-    on:open={() => {
+    onopen={() => {
       const currentPageElement = statisticsSummaryPageRefs[currentStatisticsSummaryPage];
 
       if (!currentPageElement || !statisticsSummaryPagesContainer) {
@@ -631,28 +633,29 @@
     }}
   >
     <div class="mx-6">{statisticsSummaryPageLabel}</div>
-    <div
-      slot="content"
-      class="max-h-32 w-32 p-2 flex flex-col overflow-auto"
-      bind:this={statisticsSummaryPagesContainer}
-    >
-      {#each statisticsSummaryPages as statisticsSummaryPage, pageIndex (statisticsSummaryPage)}
-        <button
-          class="hover:opacity-50 hover:bg-slate-300 hover:text-black"
-          class:bg-slate-300={statisticsSummaryPage === currentStatisticsSummaryPage}
-          class:text-black={statisticsSummaryPage === currentStatisticsSummaryPage}
-          bind:this={statisticsSummaryPageRefs[pageIndex + 1]}
-          on:click={({ target }) => {
-            setRowInEditMode();
+    {#snippet content()}
+      <div
+        class="max-h-32 w-32 p-2 flex flex-col overflow-auto"
+        bind:this={statisticsSummaryPagesContainer}
+      >
+        {#each statisticsSummaryPages as statisticsSummaryPage, pageIndex (statisticsSummaryPage)}
+          <button
+            class="hover:opacity-50 hover:bg-slate-300 hover:text-black"
+            class:bg-slate-300={statisticsSummaryPage === currentStatisticsSummaryPage}
+            class:text-black={statisticsSummaryPage === currentStatisticsSummaryPage}
+            bind:this={statisticsSummaryPageRefs[pageIndex + 1]}
+            on:click={({ target }) => {
+              setRowInEditMode();
 
-            currentStatisticsSummaryPage = statisticsSummaryPage;
-            target?.dispatchEvent(new CustomEvent(CLOSE_POPOVER, { bubbles: true }));
-          }}
-        >
-          {statisticsSummaryPage}
-        </button>
-      {/each}
-    </div>
+              currentStatisticsSummaryPage = statisticsSummaryPage;
+              target?.dispatchEvent(new CustomEvent(CLOSE_POPOVER, { bubbles: true }));
+            }}
+          >
+            {statisticsSummaryPage}
+          </button>
+        {/each}
+      </div>
+    {/snippet}
   </Popover>
   <button
     disabled={currentStatisticsSummaryPage === statisticsSummaryMaxPages}
