@@ -9,6 +9,7 @@
   import { lastSyncedSettingsSource$, lastSyncedSettingsTarget$ } from '$lib/data/store';
   import { dummyFn } from '$lib/functions/utils';
   import Fa from 'svelte-fa';
+  import { untrack } from 'svelte';
 
   interface Props {
     settingsSyncHeader?: string;
@@ -22,7 +23,7 @@
   const syncSources: SyncSelection[] = [
     { id: InternalStorageSources.INTERNAL_BROWSER, label: 'Browser DB', type: StorageKey.BROWSER },
     { id: InternalStorageSources.INTERNAL_ZIP, label: 'ZIP File', type: StorageKey.BACKUP },
-    ...storageSources.map((storageSource) => ({
+    ...untrack(() => storageSources).map((storageSource) => ({
       id: storageSource.name,
       label: `${storageSource.name} (${storageSource.type})`,
       type: storageSource.type

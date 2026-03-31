@@ -19,6 +19,7 @@
   import { database, isOnline$ } from '$lib/data/store';
   import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
   import Fa from 'svelte-fa';
+  import { untrack } from 'svelte';
 
   interface Props {
     configuredName: string;
@@ -46,7 +47,20 @@
     onclose
   }: Props = $props();
 
-  const storageSourceRefreshToken = configuredRemoteData?.refreshToken || '';
+  // Snapshot config props — these are dialog initialization values that don't change
+  const init = untrack(() => ({
+    refreshToken: configuredRemoteData?.refreshToken || '',
+    name: configuredName || '',
+    isSyncTarget: configuredIsSyncTarget || false,
+    isSourceDefault: configuredIsStorageSourceDefault || false,
+    type: configuredType || StorageKey.GDRIVE,
+    clientId: configuredRemoteData?.clientId || '',
+    clientSecret: configuredRemoteData?.clientSecret || '',
+    directoryHandle: configuredFSData?.directoryHandle as FileSystemDirectoryHandle | undefined,
+    fsPath: configuredFSData?.fsPath || '',
+    storedInManager: ('PasswordCredential' in window && configuredStoredInManager) || false,
+    encryptionDisabled: configuredEncryptionDisabled || false
+  }));
 
   let containerElm: HTMLElement = $state();
   let nameElm: HTMLInputElement = $state();
@@ -54,20 +68,17 @@
   let pwConfirmElm: HTMLInputElement = $state();
   let error = $state('');
   const passwordManagerAvailable = 'PasswordCredential' in window;
-  let storageSourceName = $state(configuredName || '');
-  let storageSourceIsSyncTarget = $state(configuredIsSyncTarget || false);
-  let storageSourceIsSourceDefault = $state(configuredIsStorageSourceDefault || false);
-  let storageSourceType = $state(configuredType || StorageKey.GDRIVE);
-  let storageSourceClientId = $state(configuredRemoteData?.clientId || '');
-  let storageSourceClientSecret = $state(configuredRemoteData?.clientSecret || '');
-  let directoryHandle: FileSystemDirectoryHandle | undefined = $state(
-    configuredFSData?.directoryHandle
-  );
-  let handleFsPath = $state(configuredFSData?.fsPath || '');
-  let storageSourceStoredInManager = $state(
-    (passwordManagerAvailable && configuredStoredInManager) || false
-  );
-  let storageSourceEncryptionDisabled = $state(configuredEncryptionDisabled || false);
+  const storageSourceRefreshToken = init.refreshToken;
+  let storageSourceName = $state(init.name);
+  let storageSourceIsSyncTarget = $state(init.isSyncTarget);
+  let storageSourceIsSourceDefault = $state(init.isSourceDefault);
+  let storageSourceType = $state(init.type);
+  let storageSourceClientId = $state(init.clientId);
+  let storageSourceClientSecret = $state(init.clientSecret);
+  let directoryHandle: FileSystemDirectoryHandle | undefined = $state(init.directoryHandle);
+  let handleFsPath = $state(init.fsPath);
+  let storageSourceStoredInManager = $state(init.storedInManager);
+  let storageSourceEncryptionDisabled = $state(init.encryptionDisabled);
   let storageSourceTypes = $state([
     { key: StorageKey.GDRIVE, label: 'GDrive' },
     { key: StorageKey.ONEDRIVE, label: 'OneDrive' }
