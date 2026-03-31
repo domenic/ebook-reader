@@ -168,9 +168,7 @@
     dispatch('delete', request);
   }
 
-  function handlePropertyChange({
-    detail: { property, statisticsSummaryKey }
-  }: CustomEvent<StatisticsDataSourceChange>) {
+  function handlePropertyChange({ property, statisticsSummaryKey }: StatisticsDataSourceChange) {
     switch (statisticsSummaryKey) {
       case StatisticsSummaryKey.READING_TIME:
         $lastReadingTimeDataSource$ = property;
@@ -373,7 +371,7 @@
         isHidden={isTitleAggregation}
         gridRow={renderFullStatisticsSummaryTable ? undefined : 2}
         title="Click to select/sort by this Attribute"
-        on:propertyChange={(detail) => handlePropertyChange(detail)}
+        onpropertyChange={handlePropertyChange}
       />
       <StatisticsSummaryHeader
         statisticsSummaryKey={StatisticsSummaryKey.TITLE}
@@ -383,7 +381,7 @@
         isHidden={isDateAggregation}
         gridRow={renderFullStatisticsSummaryTable ? undefined : 3 - statisticsSummaryGridRowMod}
         title="Click to select/sort by this Attribute"
-        on:propertyChange={(detail) => handlePropertyChange(detail)}
+        onpropertyChange={handlePropertyChange}
       />
       <StatisticsSummaryHeader
         statisticsSummaryKey={StatisticsSummaryKey.READING_TIME}
@@ -392,7 +390,7 @@
         hasRowInEdit={rowInEdit !== undefined}
         gridRow={renderFullStatisticsSummaryTable ? undefined : 4 - statisticsSummaryGridRowMod}
         title={'Switch between Reading Time Attributes'}
-        on:propertyChange={(detail) => handlePropertyChange(detail)}
+        onpropertyChange={handlePropertyChange}
       />
       <StatisticsSummaryHeader
         statisticsSummaryKey={StatisticsSummaryKey.CHARACTERS}
@@ -401,7 +399,7 @@
         hasRowInEdit={rowInEdit !== undefined}
         gridRow={renderFullStatisticsSummaryTable ? undefined : 5 - statisticsSummaryGridRowMod}
         title={'Switch between Character Attributes'}
-        on:propertyChange={(detail) => handlePropertyChange(detail)}
+        onpropertyChange={handlePropertyChange}
       />
       <StatisticsSummaryHeader
         statisticsSummaryKey={StatisticsSummaryKey.READING_SPEED}
@@ -410,7 +408,7 @@
         hasRowInEdit={rowInEdit !== undefined}
         gridRow={renderFullStatisticsSummaryTable ? undefined : 6 - statisticsSummaryGridRowMod}
         title={'Switch between Reading Speed Attributes'}
-        on:propertyChange={(detail) => handlePropertyChange(detail)}
+        onpropertyChange={handlePropertyChange}
       />
       {#each currentStatisticsSummaryRows as currentStatisticsSummaryRow (currentStatisticsSummaryRow.id)}
         {@const currentRowInEdit = rowInEdit && rowInEdit.id === currentStatisticsSummaryRow.id}

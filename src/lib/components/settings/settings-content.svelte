@@ -1189,7 +1189,7 @@
       {/if}
       <SettingsReadingGoals
         storageSources={$storageSources$}
-        on:spinner={({ detail }) => (showSpinner = detail)}
+        onspinner={(value) => (showSpinner = value)}
       />
     {/if}
   {/if}

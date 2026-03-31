@@ -35,9 +35,7 @@
 
   onDestroy(() => ($preFilteredTitlesForStatistics$ = new Set()));
 
-  function handleSelectedStatisticsDateChange({
-    detail: { dateString, isStartDate }
-  }: CustomEvent<StatisticsDateChange>) {
+  function handleSelectedStatisticsDateChange({ dateString, isStartDate }: StatisticsDateChange) {
     const referenceDate = getStartHoursDate($startDayHoursForTracker$);
     const todayKey = getDateKey($startDayHoursForTracker$, referenceDate);
 
@@ -135,7 +133,7 @@
     }}
   >
     <StatisticsSettings
-      on:statisticsDateChange={handleSelectedStatisticsDateChange}
+      onstatisticsDateChange={handleSelectedStatisticsDateChange}
       onclose={() => (showStatisticsSettings = false)}
     />
   </div>

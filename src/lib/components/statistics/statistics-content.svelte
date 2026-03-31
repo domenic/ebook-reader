@@ -562,9 +562,7 @@
     }
   }
 
-  function updateTitleFilter({
-    detail: newStatisticsTitleFilters
-  }: CustomEvent<StatisticsTitleFilterItem[]>) {
+  function updateTitleFilter(newStatisticsTitleFilters: StatisticsTitleFilterItem[]) {
     const newStatisticsTitleFilterData = new Map<string, boolean>();
 
     for (let index = 0, { length } = newStatisticsTitleFilters; index < length; index += 1) {
@@ -853,8 +851,8 @@
     <StatisticsTitleFilter
       {statisticsTitleFilters}
       {titlesInStatisticsDateRange}
-      on:applyFilter={updateTitleFilter}
-      on:clearPrefilter={clearPrefilter}
+      onapplyFilter={updateTitleFilter}
+      onclearPrefilter={clearPrefilter}
       onclose={() => ($statisticsTitleFilterIsOpen$ = false)}
     />
   </div>

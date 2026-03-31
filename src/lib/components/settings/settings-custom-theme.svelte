@@ -6,13 +6,22 @@
   import { buttonClasses } from '$lib/css-classes';
   import { customThemes$, theme$ } from '$lib/data/store';
   import { availableThemes, type CustomThemeValue, type ThemeOption } from '$lib/data/theme-option';
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
 
-  export let selectedTheme: string;
-  export let existingThemes: ToggleOption<string>[] = [];
-  export let onclose: (() => void) | undefined = undefined;
+  interface Props {
+    selectedTheme: string;
+    existingThemes?: ToggleOption<string>[];
+    onclose?: () => void;
+  }
 
-  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = {
+  let { selectedTheme, existingThemes = [], onclose }: Props = $props();
+
+  const init = untrack(() => ({
+    selectedTheme,
+    existingThemes
+  }));
+
+  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = $state({
     fontColor: { hexExpression: '#ffffff', alphaValue: 1, rgbaExpression: 'rgba(255,255,255,1)' },
     backgroundColor: {
       hexExpression: '#000000',
@@ -44,23 +53,25 @@
       alphaValue: 1,
       rgbaExpression: 'rgba(255,255,255,1)'
     }
-  };
+  });
 
-  let themeToCopy = existingThemes[0].id;
-  let themeName = '';
-  let themeNameElm: HTMLInputElement;
+  let themeToCopy = $state(init.existingThemes[0].id);
+  let themeName = $state('');
+  let themeNameElm: HTMLInputElement = $state();
 
-  $: themeStyle = `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`;
+  let themeStyle = $derived(
+    `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`
+  );
 
   onMount(() => {
-    const existingThemeObject = $customThemes$[selectedTheme];
+    const existingThemeObject = $customThemes$[init.selectedTheme];
 
     if (!existingThemeObject) {
       return;
     }
 
     customTheme = getThemeData(existingThemeObject);
-    themeName = selectedTheme;
+    themeName = init.selectedTheme;
   });
 
   function getThemeData(referenceObject: ThemeOption): Record<keyof ThemeOption, CustomThemeValue> {
@@ -155,8 +166,8 @@
       newTheme[key] = value.rgbaExpression;
     }
 
-    if (selectedTheme && selectedTheme !== themeName) {
-      delete $customThemes$[selectedTheme];
+    if (init.selectedTheme && init.selectedTheme !== themeName) {
+      delete $customThemes$[init.selectedTheme];
     }
 
     $customThemes$ = { ...$customThemes$, ...{ [themeName]: newTheme } };
@@ -198,13 +209,13 @@
         class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
       >
         <select class="sm:col-span-2" bind:value={themeToCopy}>
-          {#each existingThemes as theme (theme.id)}
+          {#each init.existingThemes as theme (theme.id)}
             <option value={theme.id}>
               {theme.id}
             </option>
           {/each}
         </select>
-        <button class={buttonClasses} on:click={handleCopyTheme}
+        <button class={buttonClasses} onclick={handleCopyTheme}
           >Copy
           <Ripple />
         </button>
@@ -266,11 +277,11 @@
   {/snippet}
   {#snippet footer()}
     <div class="mt-2 flex grow justify-between">
-      <button class={buttonClasses} on:click={() => onclose?.()}>
+      <button class={buttonClasses} onclick={() => onclose?.()}>
         Cancel
         <Ripple />
       </button>
-      <button class={buttonClasses} on:click={handleSave}>
+      <button class={buttonClasses} onclick={handleSave}>
         Save
         <Ripple />
       </button>

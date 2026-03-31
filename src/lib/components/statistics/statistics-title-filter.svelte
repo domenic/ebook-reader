@@ -25,17 +25,24 @@
   import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
   import { convertRemToPixels, getFullHeight, limitToRange } from '$lib/functions/utils';
   import { debounceTime, fromEvent, tap } from 'rxjs';
-  import { createEventDispatcher, onMount, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let statisticsTitleFilters: Map<string, boolean>;
-  export let titlesInStatisticsDateRange: Set<string>;
-  export let onclose: (() => void) | undefined = undefined;
+  interface Props {
+    statisticsTitleFilters: Map<string, boolean>;
+    titlesInStatisticsDateRange: Set<string>;
+    onclose?: () => void;
+    onapplyFilter?: (data: StatisticsTitleFilterItem[]) => void;
+    onclearPrefilter?: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    applyFilter: StatisticsTitleFilterItem[];
-    clearPrefilter: void;
-  }>();
+  let {
+    statisticsTitleFilters,
+    titlesInStatisticsDateRange,
+    onclose,
+    onapplyFilter,
+    onclearPrefilter
+  }: Props = $props();
 
   const resizeHandler$ = fromEvent(window, 'resize').pipe(
     debounceTime(250),
@@ -46,27 +53,35 @@
   const statisticsTitleFilterBaseRowRem = 4;
   const statisticsTitleFilterBaseRowGap = 2;
 
-  let statisticsTitleFilterTableContainerElm: HTMLElement;
-  let statisticsTitleFilterButtonContainer: HTMLElement;
-  let titleFilter = '';
+  let statisticsTitleFilterTableContainerElm: HTMLElement = $state();
+  let statisticsTitleFilterButtonContainer: HTMLElement = $state();
+  let titleFilter = $state('');
   let titleFilterTimer: number | undefined;
-  let titlesToFilter: StatisticsTitleFilterItem[] = [];
-  let filteredTitles: StatisticsTitleFilterItem[] = [];
-  let currentTitlesToFilterRows: StatisticsTitleFilterItem[] = [];
-  let statisticsTitleFilterMaxPages = 0;
-  let currentStatisticsTitleFilterPage = 1;
-  let statisticsTitleFilterRowsPerPage = 0;
+  let titlesToFilter: StatisticsTitleFilterItem[] = $state([]);
+  let filteredTitles: StatisticsTitleFilterItem[] = $state([]);
+  let currentTitlesToFilterRows: StatisticsTitleFilterItem[] = $state([]);
+  let statisticsTitleFilterMaxPages = $state(0);
+  let currentStatisticsTitleFilterPage = $state(1);
+  let statisticsTitleFilterRowsPerPage = $state(0);
 
-  $: statisticsTitleFilterPageLabel = `PAGE ${currentStatisticsTitleFilterPage} / ${statisticsTitleFilterMaxPages}`;
-
-  $: setTitlesToFilter(statisticsTitleFilters);
-
-  $: applyTitleFilters(
-    $lastStatisticsFilterDateRangeOnly$,
-    $lastStatisticsFilterShowSelectedTitlesOnly$
+  let statisticsTitleFilterPageLabel = $derived(
+    `PAGE ${currentStatisticsTitleFilterPage} / ${statisticsTitleFilterMaxPages}`
   );
 
-  $: updateStatisticsTitleFilterTableData(currentStatisticsTitleFilterPage);
+  $effect(() => {
+    setTitlesToFilter(statisticsTitleFilters);
+  });
+
+  $effect(() => {
+    applyTitleFilters(
+      $lastStatisticsFilterDateRangeOnly$,
+      $lastStatisticsFilterShowSelectedTitlesOnly$
+    );
+  });
+
+  $effect(() => {
+    updateStatisticsTitleFilterTableData(currentStatisticsTitleFilterPage);
+  });
 
   onMount(() => {
     $skipKeyDownListener$ = true;
@@ -172,7 +187,7 @@
   <button
     title="Close Title Filter"
     class="flex items-end md:items-center"
-    on:click={() => onclose?.()}
+    onclick={() => onclose?.()}
   >
     <Fa icon={faXmark} />
   </button>
@@ -183,23 +198,23 @@
     placeholder="Filter Title"
     class="w-full text-black"
     bind:value={titleFilter}
-    on:input={handleTitleFilterChange}
+    oninput={handleTitleFilterChange}
   />
   <div class="flex justify-between mt-6 text-2xl">
     <button
       title="Apply Filter"
       class="hover:text-red-500"
-      on:click={() => {
-        dispatch('applyFilter', titlesToFilter);
+      onclick={() => {
+        onapplyFilter?.(titlesToFilter);
         onclose?.();
       }}
     >
       <Fa icon={faCircleCheck} />
     </button>
-    <button title="Select All" class="hover:text-red-500" on:click={() => handleSelectAll(true)}>
+    <button title="Select All" class="hover:text-red-500" onclick={() => handleSelectAll(true)}>
       <Fa icon={faListCheck} />
     </button>
-    <button title="Remove All" class="hover:text-red-500" on:click={() => handleSelectAll(false)}>
+    <button title="Remove All" class="hover:text-red-500" onclick={() => handleSelectAll(false)}>
       <Fa icon={faList} />
     </button>
     <button
@@ -207,7 +222,7 @@
         ? 'Display Titles across all Time'
         : 'Display Titles in selected Date Range only'}
       class="hover:text-red-500"
-      on:click={() => ($lastStatisticsFilterDateRangeOnly$ = !$lastStatisticsFilterDateRangeOnly$)}
+      onclick={() => ($lastStatisticsFilterDateRangeOnly$ = !$lastStatisticsFilterDateRangeOnly$)}
     >
       <Fa icon={$lastStatisticsFilterDateRangeOnly$ ? faCalendarXmark : faCalendar} />
     </button>
@@ -216,7 +231,7 @@
         ? 'Display all Titles'
         : 'Display selected Titles only'}
       class="hover:text-red-500"
-      on:click={() =>
+      onclick={() =>
         ($lastStatisticsFilterShowSelectedTitlesOnly$ =
           !$lastStatisticsFilterShowSelectedTitlesOnly$)}
     >
@@ -226,7 +241,7 @@
       <button
         title="Remove Prefilter"
         class="hover:text-red-500"
-        on:click={() => dispatch('clearPrefilter')}
+        onclick={() => onclearPrefilter?.()}
       >
         <Fa icon={faTrash} />
       </button>
@@ -243,7 +258,7 @@
           <input
             type="checkbox"
             bind:checked={currentTitlesToFilterRow.isSelected}
-            on:change={() => {
+            onchange={() => {
               if ($lastStatisticsFilterShowSelectedTitlesOnly$) {
                 applyTitleFilters();
               }
@@ -271,7 +286,7 @@
       disabled={currentStatisticsTitleFilterPage === 1}
       class:opacity-25={currentStatisticsTitleFilterPage === 1}
       class:cursor-not-allowed={currentStatisticsTitleFilterPage === 1}
-      on:click={() => (currentStatisticsTitleFilterPage -= 1)}
+      onclick={() => (currentStatisticsTitleFilterPage -= 1)}
     >
       <Fa icon={faChevronLeft} />
     </button>
@@ -280,7 +295,7 @@
       disabled={currentStatisticsTitleFilterPage === statisticsTitleFilterMaxPages}
       class:opacity-25={currentStatisticsTitleFilterPage === statisticsTitleFilterMaxPages}
       class:cursor-not-allowed={currentStatisticsTitleFilterPage === statisticsTitleFilterMaxPages}
-      on:click={() => (currentStatisticsTitleFilterPage += 1)}
+      onclick={() => (currentStatisticsTitleFilterPage += 1)}
     >
       <Fa icon={faChevronRight} />
     </button>

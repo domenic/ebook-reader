@@ -20,53 +20,64 @@
     secondsToMinutes
   } from '$lib/functions/statistic-util';
   import { pluralize } from '$lib/functions/utils';
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let newReadingGoal: ReadingGoal;
-  export let resolver: (arg0: ReadingGoalSaveResult) => void;
-  export let onclose: (() => void) | undefined = undefined;
-
-  let showSpinner = true;
-  let newStartDate = newReadingGoal.goalStartDate;
-  let archiveReadingGoal = false;
-  let archiveDateEditable = false;
-  let archivalOptions: ReadingGoalArchivalOption[] = [];
-  let selectedArchiveOption = '';
-  let archivalMaxDate: string;
-  let archivalStartDate = '';
-  let archivalEndDate = '';
-  let archivalOriginalEndDate = '';
-  let error = '';
-  let existingReadingGoals: BooksDbReadingGoal[] = [];
-  let readingGoalsToReplace: BooksDbReadingGoal[] = [];
-
-  $: selectedArchiveOptionObject = archivalOptions.find(
-    (opt) => opt.label === selectedArchiveOption
-  );
-
-  $: readingGoalsToReplace = existingReadingGoals.filter(
-    (readingGoal) => readingGoal.goalStartDate !== $readingGoal$.goalStartDate
-  );
-
-  $: readingGoalToReplaceMessage = readingGoalsToReplace.length
-    ? `${pluralize(readingGoalsToReplace.length, 'Item')} will be replaced`
-    : '';
-
-  $: if (selectedArchiveOptionObject) {
-    ({ archivalStartDate, archivalEndDate } = selectedArchiveOptionObject);
-    archiveDateEditable = selectedArchiveOptionObject.editable;
-    updateNextReadingGoalStartDate();
+  interface Props {
+    newReadingGoal: ReadingGoal;
+    resolver: (arg0: ReadingGoalSaveResult) => void;
+    onclose?: () => void;
   }
 
-  $: if (newReadingGoal.goalStartDate) {
-    if (!archiveReadingGoal) {
-      newStartDate = newReadingGoal.goalStartDate;
-      archivalStartDate = $readingGoal$.goalStartDate;
-    } else {
+  let { newReadingGoal, resolver, onclose }: Props = $props();
+
+  let showSpinner = $state(true);
+  let newStartDate = $state(untrack(() => newReadingGoal.goalStartDate));
+  let archiveReadingGoal = $state(false);
+  let archiveDateEditable = $state(false);
+  let archivalOptions: ReadingGoalArchivalOption[] = $state([]);
+  let selectedArchiveOption = $state('');
+  let archivalMaxDate: string;
+  let archivalStartDate = $state('');
+  let archivalEndDate = $state('');
+  let archivalOriginalEndDate = '';
+  let error = $state('');
+  let existingReadingGoals: BooksDbReadingGoal[] = $state([]);
+
+  let selectedArchiveOptionObject = $derived(
+    archivalOptions.find((opt) => opt.label === selectedArchiveOption)
+  );
+
+  let readingGoalsToReplace = $derived(
+    existingReadingGoals.filter(
+      (readingGoal) => readingGoal.goalStartDate !== $readingGoal$.goalStartDate
+    )
+  );
+
+  let readingGoalToReplaceMessage = $derived(
+    readingGoalsToReplace.length
+      ? `${pluralize(readingGoalsToReplace.length, 'Item')} will be replaced`
+      : ''
+  );
+
+  $effect(() => {
+    if (selectedArchiveOptionObject) {
+      ({ archivalStartDate, archivalEndDate } = selectedArchiveOptionObject);
+      archiveDateEditable = selectedArchiveOptionObject.editable;
       updateNextReadingGoalStartDate();
     }
-  }
+  });
+
+  $effect(() => {
+    if (newReadingGoal.goalStartDate) {
+      if (!archiveReadingGoal) {
+        newStartDate = newReadingGoal.goalStartDate;
+        archivalStartDate = $readingGoal$.goalStartDate;
+      } else {
+        updateNextReadingGoalStartDate();
+      }
+    }
+  });
 
   onMount(init);
 
@@ -286,7 +297,7 @@
       </div>
     {/if}
     {#if archivalOptions.length}
-      <input type="checkbox" bind:checked={archiveReadingGoal} on:change={checkDates} />
+      <input type="checkbox" bind:checked={archiveReadingGoal} onchange={checkDates} />
       <span class:opacity-50={!archiveReadingGoal}>
         <span class="mr-2">Archive Reading Goal from</span>
         <input
@@ -294,7 +305,7 @@
           type="date"
           disabled={!archiveReadingGoal || !archiveDateEditable}
           bind:value={archivalStartDate}
-          on:change={checkDates}
+          onchange={checkDates}
         />
         <span class="mx-2">-</span>
         <input
@@ -302,7 +313,7 @@
           type="date"
           disabled={!archiveReadingGoal || !archiveDateEditable}
           bind:value={archivalEndDate}
-          on:change={checkDates}
+          onchange={checkDates}
         />
       </span>
       <div
@@ -319,7 +330,7 @@
               disabled={!archiveReadingGoal}
               value={archivalOption.label}
               bind:group={selectedArchiveOption}
-              on:change={checkDates}
+              onchange={checkDates}
             />
             <span class:opacity-50={!archiveReadingGoal}>{archivalOption.label}</span>
           </div>
@@ -342,11 +353,11 @@
   {/snippet}
   {#snippet footer()}
     <div class="flex grow justify-between">
-      <button class={buttonClasses} on:click={() => closeDialog(true)}>
+      <button class={buttonClasses} onclick={() => closeDialog(true)}>
         Cancel
         <Ripple />
       </button>
-      <button class={buttonClasses} on:click={() => closeDialog()}>
+      <button class={buttonClasses} onclick={() => closeDialog()}>
         Confirm
         <Ripple />
       </button>
