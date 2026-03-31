@@ -18,16 +18,23 @@
     oneDriveStorageSource$
   } from '$lib/data/store';
   import { executeReplicate$ } from '$lib/functions/replication/replication-progress';
-  export let onclose: (() => void) | undefined = undefined;
 
-  let icons = [
+  interface Props {
+    onclose?: () => void;
+  }
+
+  let { onclose }: Props = $props();
+
+  const baseIcons = [
     { ...getStorageIconData(StorageKey.BACKUP), source: StorageKey.BACKUP, label: 'Zip File' },
     { ...getStorageIconData(StorageKey.BROWSER), source: StorageKey.BROWSER, label: 'Browser DB' }
   ];
 
-  $: if (browser) {
-    icons = [
-      ...icons,
+  let icons = $derived.by(() => {
+    if (!browser) return baseIcons;
+
+    return [
+      ...baseIcons,
       ...(isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
         ? [{ ...getStorageIconData(StorageKey.GDRIVE), source: StorageKey.GDRIVE, label: 'GDrive' }]
         : []),
@@ -44,7 +51,7 @@
         ? [{ ...getStorageIconData(StorageKey.FS), source: StorageKey.FS, label: 'Filesystem' }]
         : [])
     ].filter((icon) => icon.source !== $storageSource$);
-  }
+  });
 
   function replicateData() {
     executeReplicate$.next();
@@ -63,7 +70,7 @@
   {/snippet}
   {#snippet footer()}
     <div class="flex grow justify-between">
-      <button class={buttonClasses} on:click={() => onclose?.()}>
+      <button class={buttonClasses} onclick={() => onclose?.()}>
         Cancel
         <Ripple />
       </button>
@@ -71,7 +78,7 @@
         class={buttonClasses}
         class:cursor-not-allowed={!$lastExportedTypes$.length}
         disabled={!$lastExportedTypes$.length}
-        on:click={replicateData}
+        onclick={replicateData}
       >
         Start
         <Ripple />

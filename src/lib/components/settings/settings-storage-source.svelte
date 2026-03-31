@@ -20,48 +20,76 @@
   import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
   import Fa from 'svelte-fa';
 
-  export let configuredName: string;
-  export let configuredIsSyncTarget: boolean;
-  export let configuredIsStorageSourceDefault: boolean;
-  export let configuredType: StorageKey;
-  export let configuredRemoteData: StorageUnlockAction;
-  export let configuredFSData: FsHandle;
-  export let configuredStoredInManager: boolean;
-  export let configuredEncryptionDisabled: boolean;
-  export let resolver: (arg0: StorageSourceSaveResult | undefined) => void;
-  export let onclose: (() => void) | undefined = undefined;
+  interface Props {
+    configuredName: string;
+    configuredIsSyncTarget: boolean;
+    configuredIsStorageSourceDefault: boolean;
+    configuredType: StorageKey;
+    configuredRemoteData: StorageUnlockAction;
+    configuredFSData: FsHandle;
+    configuredStoredInManager: boolean;
+    configuredEncryptionDisabled: boolean;
+    resolver: (arg0: StorageSourceSaveResult | undefined) => void;
+    onclose?: () => void;
+  }
+
+  let {
+    configuredName,
+    configuredIsSyncTarget,
+    configuredIsStorageSourceDefault,
+    configuredType,
+    configuredRemoteData,
+    configuredFSData,
+    configuredStoredInManager,
+    configuredEncryptionDisabled,
+    resolver,
+    onclose
+  }: Props = $props();
 
   const storageSourceRefreshToken = configuredRemoteData?.refreshToken || '';
 
-  let containerElm: HTMLElement;
-  let nameElm: HTMLInputElement;
-  let pwElm: HTMLInputElement;
-  let pwConfirmElm: HTMLInputElement;
-  let error = '';
+  let containerElm: HTMLElement = $state();
+  let nameElm: HTMLInputElement = $state();
+  let pwElm: HTMLInputElement = $state();
+  let pwConfirmElm: HTMLInputElement = $state();
+  let error = $state('');
   const passwordManagerAvailable = 'PasswordCredential' in window;
-  let storageSourceName = configuredName || '';
-  let storageSourceIsSyncTarget = configuredIsSyncTarget || false;
-  let storageSourceIsSourceDefault = configuredIsStorageSourceDefault || false;
-  let storageSourceType = configuredType || StorageKey.GDRIVE;
-  let storageSourceClientId = configuredRemoteData?.clientId || '';
-  let storageSourceClientSecret = configuredRemoteData?.clientSecret || '';
-  let directoryHandle: FileSystemDirectoryHandle | undefined = configuredFSData?.directoryHandle;
-  let handleFsPath = configuredFSData?.fsPath || '';
-  let storageSourceStoredInManager =
-    (passwordManagerAvailable && configuredStoredInManager) || false;
-  let storageSourceEncryptionDisabled = configuredEncryptionDisabled || false;
-  let storageSourceTypes = [
+  let storageSourceName = $state(configuredName || '');
+  let storageSourceIsSyncTarget = $state(configuredIsSyncTarget || false);
+  let storageSourceIsSourceDefault = $state(configuredIsStorageSourceDefault || false);
+  let storageSourceType = $state(configuredType || StorageKey.GDRIVE);
+  let storageSourceClientId = $state(configuredRemoteData?.clientId || '');
+  let storageSourceClientSecret = $state(configuredRemoteData?.clientSecret || '');
+  let directoryHandle: FileSystemDirectoryHandle | undefined = $state(
+    configuredFSData?.directoryHandle
+  );
+  let handleFsPath = $state(configuredFSData?.fsPath || '');
+  let storageSourceStoredInManager = $state(
+    (passwordManagerAvailable && configuredStoredInManager) || false
+  );
+  let storageSourceEncryptionDisabled = $state(configuredEncryptionDisabled || false);
+  let storageSourceTypes = $state([
     { key: StorageKey.GDRIVE, label: 'GDrive' },
     { key: StorageKey.ONEDRIVE, label: 'OneDrive' }
-  ];
+  ]);
 
-  $: if (browser && 'showDirectoryPicker' in window) {
-    storageSourceTypes = [...storageSourceTypes, { key: StorageKey.FS, label: 'Filesystem' }];
-  }
+  $effect(() => {
+    if (browser && 'showDirectoryPicker' in window) {
+      storageSourceTypes = [
+        { key: StorageKey.GDRIVE, label: 'GDrive' },
+        { key: StorageKey.ONEDRIVE, label: 'OneDrive' },
+        { key: StorageKey.FS, label: 'Filesystem' }
+      ];
+    }
+  });
 
-  $: setInitialPassword(pwElm);
+  $effect(() => {
+    setInitialPassword(pwElm);
+  });
 
-  $: setInitialPassword(pwConfirmElm);
+  $effect(() => {
+    setInitialPassword(pwConfirmElm);
+  });
 
   async function selectDirectory() {
     resetCustomValidity();
@@ -269,7 +297,7 @@
       <select
         class="my-4"
         bind:value={storageSourceType}
-        on:change={() => {
+        onchange={() => {
           if (storageSourceType === StorageKey.FS) {
             storageSourceClientId = '';
             storageSourceClientSecret = '';
@@ -288,7 +316,7 @@
         {/each}
       </select>
       {#if storageSourceType === StorageKey.FS}
-        <button class={buttonClasses} on:click={selectDirectory}>
+        <button class={buttonClasses} onclick={selectDirectory}>
           Select Directory
           <Ripple />
         </button>
@@ -323,7 +351,7 @@
               id="cbx-store-in-manager"
               type="checkbox"
               bind:checked={storageSourceStoredInManager}
-              on:change={() => {
+              onchange={() => {
                 if (storageSourceStoredInManager && storageSourceEncryptionDisabled) {
                   storageSourceEncryptionDisabled = false;
                 }
@@ -337,7 +365,7 @@
             id="cbx-disable-encryption"
             type="checkbox"
             bind:checked={storageSourceEncryptionDisabled}
-            on:change={() => {
+            onchange={() => {
               if (storageSourceEncryptionDisabled) {
                 storageSourceStoredInManager = false;
                 pwElm.value = '';
@@ -371,11 +399,11 @@
   {/snippet}
   {#snippet footer()}
     <div class="mt-4 flex grow justify-between">
-      <button class={buttonClasses} on:click={() => closeDialog()}>
+      <button class={buttonClasses} onclick={() => closeDialog()}>
         Cancel
         <Ripple />
       </button>
-      <button class={buttonClasses} on:click={save}>
+      <button class={buttonClasses} onclick={save}>
         Save
         <Ripple />
       </button>

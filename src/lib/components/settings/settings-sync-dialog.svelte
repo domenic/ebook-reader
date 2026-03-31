@@ -10,10 +10,14 @@
   import { dummyFn } from '$lib/functions/utils';
   import Fa from 'svelte-fa';
 
-  export let settingsSyncHeader = '';
-  export let storageSources: BooksDbStorageSource[] = [];
-  export let resolver: (arg0: SyncSelection[]) => void;
-  export let onclose: (() => void) | undefined = undefined;
+  interface Props {
+    settingsSyncHeader?: string;
+    storageSources?: BooksDbStorageSource[];
+    resolver: (arg0: SyncSelection[]) => void;
+    onclose?: () => void;
+  }
+
+  let { settingsSyncHeader = '', storageSources = [], resolver, onclose }: Props = $props();
 
   const syncSources: SyncSelection[] = [
     { id: InternalStorageSources.INTERNAL_BROWSER, label: 'Browser DB', type: StorageKey.BROWSER },
@@ -25,15 +29,19 @@
     }))
   ];
 
-  let selectedSource =
-    syncSources.find((entry) => entry.id === $lastSyncedSettingsSource$)?.id || syncSources[0].id;
-  let selectedTarget =
-    syncSources.find((entry) => entry.id === $lastSyncedSettingsTarget$)?.id || syncSources[1].id;
-
-  $: sources = syncSources.filter(
-    (entry) => entry.id !== selectedTarget && entry.id !== InternalStorageSources.INTERNAL_ZIP
+  let selectedSource = $state(
+    syncSources.find((entry) => entry.id === $lastSyncedSettingsSource$)?.id || syncSources[0].id
   );
-  $: targets = syncSources.filter((entry) => entry.id !== selectedSource);
+  let selectedTarget = $state(
+    syncSources.find((entry) => entry.id === $lastSyncedSettingsTarget$)?.id || syncSources[1].id
+  );
+
+  let sources = $derived(
+    syncSources.filter(
+      (entry) => entry.id !== selectedTarget && entry.id !== InternalStorageSources.INTERNAL_ZIP
+    )
+  );
+  let targets = $derived(syncSources.filter((entry) => entry.id !== selectedSource));
 
   function closeDialog(wasCanceled = false) {
     if (!wasCanceled) {
@@ -78,7 +86,7 @@
         style:cursor={selectedTarget === InternalStorageSources.INTERNAL_ZIP
           ? 'not-allowed'
           : 'pointer'}
-        on:click={() => {
+        onclick={() => {
           if (selectedTarget === InternalStorageSources.INTERNAL_ZIP) {
             return;
           }
@@ -89,7 +97,7 @@
           selectedSource = oldTarget;
           selectedTarget = oldSource;
         }}
-        on:keyup={dummyFn}
+        onkeyup={dummyFn}
       >
         <Fa icon={faArrowsUpDown} />
       </div>
@@ -105,11 +113,11 @@
   {/snippet}
   {#snippet footer()}
     <div class="flex grow justify-between">
-      <button class={buttonClasses} on:click={() => closeDialog(true)}>
+      <button class={buttonClasses} onclick={() => closeDialog(true)}>
         Cancel
         <Ripple />
       </button>
-      <button class={buttonClasses} on:click={() => closeDialog()}>
+      <button class={buttonClasses} onclick={() => closeDialog()}>
         Confirm
         <Ripple />
       </button>

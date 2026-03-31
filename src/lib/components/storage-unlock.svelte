@@ -6,19 +6,32 @@
   import { skipKeyDownListener$ } from '$lib/data/store';
   import { onMount } from 'svelte';
 
-  export let description: string;
-  export let action: string;
-  export let requiresSecret = true;
-  export let showCancel = false;
-  export let forwardSecret = false;
-  export let encryptedData: ArrayBuffer | undefined;
-  export let resolver: (arg0: StorageUnlockAction | undefined) => void;
-  export let onclose: (() => void) | undefined = undefined;
+  interface Props {
+    description: string;
+    action: string;
+    requiresSecret?: boolean;
+    showCancel?: boolean;
+    forwardSecret?: boolean;
+    encryptedData?: ArrayBuffer;
+    resolver: (arg0: StorageUnlockAction | undefined) => void;
+    onclose?: () => void;
+  }
 
-  let containerElm: HTMLElement;
-  let passwordElm: HTMLInputElement;
-  let secret = '';
-  let error = '';
+  let {
+    description,
+    action,
+    requiresSecret = true,
+    showCancel = false,
+    forwardSecret = false,
+    encryptedData,
+    resolver,
+    onclose
+  }: Props = $props();
+
+  let containerElm: HTMLElement = $state();
+  let passwordElm: HTMLInputElement = $state();
+  let secret = $state('');
+  let error = $state('');
 
   async function unlock() {
     containerElm.classList.remove('error-animation');
@@ -68,7 +81,7 @@
           placeholder="Password"
           bind:value={secret}
           bind:this={passwordElm}
-          on:keyup={(evt) => {
+          onkeyup={(evt) => {
             if (evt.key === 'Enter') {
               unlock();
             }
@@ -83,7 +96,7 @@
       {#if requiresSecret || showCancel}
         <button
           class={buttonClasses}
-          on:click={() => {
+          onclick={() => {
             closeDialog();
           }}
         >
@@ -91,7 +104,7 @@
           <Ripple />
         </button>
       {/if}
-      <button class={buttonClasses} on:click={unlock}>
+      <button class={buttonClasses} onclick={unlock}>
         Confirm
         <Ripple />
       </button>
