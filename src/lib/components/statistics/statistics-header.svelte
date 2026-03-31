@@ -26,14 +26,18 @@
   import { lastStatisticsTab$ } from '$lib/data/store';
   import Fa from 'svelte-fa';
 
-  export let showStatisticsSettings: boolean;
+  interface Props {
+    showStatisticsSettings: boolean;
+  }
+
+  let { showStatisticsSettings = $bindable() }: Props = $props();
 
   const copyStatisticsDataItems: StatisticsDataSource[] = [
     { key: 'readingTime', label: 'Reading Time' },
     { key: 'charactersRead', label: 'Characters Read' }
   ];
 
-  let copyStatisticsDataPopover: Popover;
+  let copyStatisticsDataPopover: Popover = $state(undefined!);
 </script>
 
 <div class="elevation-4 fixed inset-x-0 top-0 z-10">
@@ -96,7 +100,7 @@
                 {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
                   <button
                     class="p-2 hover:bg-white hover:text-gray-700"
-                    on:click={() => {
+                    onclick={() => {
                       copyStatisticsData$.next(copyStatisticsDataItem.key);
                       copyStatisticsDataPopover.toggleOpen();
                     }}

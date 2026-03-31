@@ -4,7 +4,11 @@
   import HeaderTab from '$lib/components/header-tab.svelte';
   import { baseHeaderClasses, pxScreen } from '$lib/css-classes';
 
-  export let activeSettings: string;
+  interface Props {
+    activeSettings: string;
+  }
+
+  let { activeSettings = $bindable() }: Props = $props();
 
   const settingItems = [
     {

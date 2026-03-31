@@ -43,20 +43,26 @@
   import { dummyFn } from '$lib/functions/utils';
   import Fa from 'svelte-fa';
 
-  export let storageSources: BooksDbStorageSource[];
-
-  let listLoading = true;
-  let listTooltip = 'Allows you to add a custom set of credentials';
-
-  $: if (storageSources) {
-    listLoading = false;
+  interface Props {
+    storageSources: BooksDbStorageSource[];
   }
 
-  $: fileSystemAvailable = browser && 'showDirectoryPicker' in window;
+  let { storageSources }: Props = $props();
 
-  $: if (fileSystemAvailable) {
-    listTooltip += ' or filesystem access';
-  }
+  let listLoading = $state(true);
+
+  $effect(() => {
+    if (storageSources) {
+      listLoading = false;
+    }
+  });
+
+  let fileSystemAvailable = $derived(browser && 'showDirectoryPicker' in window);
+
+  let listTooltip = $derived(
+    'Allows you to add a custom set of credentials' +
+      (fileSystemAvailable ? ' or filesystem access' : '')
+  );
 
   function isSyncTarget(name: string, referenceName: string) {
     return name === referenceName;
@@ -240,7 +246,7 @@
       class={buttonClasses}
       class:cursor-not-allowed={!storageSources}
       disabled={!storageSources}
-      on:click={() => {
+      onclick={() => {
         modifyStorageSource();
       }}
     >
@@ -282,8 +288,8 @@
                 title="Edit source"
                 class="mr-4"
                 class:hidden={isDefault}
-                on:click={() => modifyStorageSource(storageSource)}
-                on:keyup={dummyFn}
+                onclick={() => modifyStorageSource(storageSource)}
+                onkeyup={dummyFn}
               >
                 <Fa icon={faPenToSquare} />
               </div>
@@ -293,9 +299,9 @@
                 title="Toggle source as sync target"
                 class="mr-4"
                 class:opacity-50={!storageSourceIsSyncTarget}
-                on:click={() =>
+                onclick={() =>
                   syncTarget$.next($syncTarget$ === storageSource.name ? '' : storageSource.name)}
-                on:keyup={dummyFn}
+                onkeyup={dummyFn}
               >
                 <Fa icon={faCloudArrowUp} />
               </div>
@@ -305,12 +311,12 @@
                 title="Toggle source as data source for this type"
                 class="mr-4"
                 class:opacity-50={!storageSourceIsSourceDefault}
-                on:click={() =>
+                onclick={() =>
                   setStorageSourceDefault(
                     storageSourceIsSourceDefault ? '' : storageSource.name,
                     storageSource.type
                   )}
-                on:keyup={dummyFn}
+                onkeyup={dummyFn}
               >
                 <Fa icon={faTableList} />
               </div>
@@ -319,13 +325,13 @@
                 role="button"
                 title="Delete source"
                 class:hidden={isDefault}
-                on:click={() =>
+                onclick={() =>
                   deleteStorageSource(
                     storageSource,
                     storageSourceIsSyncTarget,
                     storageSourceIsSourceDefault
                   )}
-                on:keyup={dummyFn}
+                onkeyup={dummyFn}
               >
                 <Fa icon={faTrash} />
               </div>

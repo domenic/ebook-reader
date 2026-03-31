@@ -497,16 +497,16 @@
         <ButtonToggleGroup
           options={optionsForTheme}
           bind:selectedOptionId={selectedTheme}
-          on:edit={({ detail }) =>
+          onedit={(id) =>
             dialogManager.dialogs$.next([
               {
                 component: SettingsCustomTheme,
-                props: { selectedTheme: detail, existingThemes: optionsForTheme }
+                props: { selectedTheme: id, existingThemes: optionsForTheme }
               }
             ])}
-          on:delete={({ detail }) => {
+          ondelete={(id) => {
             $theme$ = optionsForTheme[optionsForTheme.length - 2]?.id || 'light-theme';
-            delete $customThemes$[detail];
+            delete $customThemes$[id];
             $customThemes$ = { ...$customThemes$ };
           }}
         >

@@ -650,19 +650,19 @@
     {replicationToProgress}
     {replicationProgressRemaining}
     bind:selectMode
-    on:selectAllClick={onSelectAllBooks}
-    on:removeClick={() => removeBooks(Array.from(selectedBookIds))}
-    on:filesChange={(ev) => onFilesChange(ev.detail)}
-    on:bugReportClick={onBugReportClick}
-    on:cancelReplication={() => {
+    onselectAllClick={onSelectAllBooks}
+    onremoveClick={() => removeBooks(Array.from(selectedBookIds))}
+    onfilesChange={onFilesChange}
+    onbugReportClick={onBugReportClick}
+    oncancelReplication={() => {
       if (!cancelSignal.aborted) {
         cancelToken.abort();
         replicationProgressRemaining = 'Canceling ...';
       }
     }}
-    on:deleteStatistics={onDeleteStatistics}
-    on:replicateData={onReplicateData}
-    on:importBackup={(ev) => onImportBackup(ev.detail)}
+    ondeleteStatistics={onDeleteStatistics}
+    onreplicateData={onReplicateData}
+    onimportBackup={onImportBackup}
   />
 </div>
 
@@ -683,8 +683,8 @@
       currentBookId={$currentBookId$}
       {selectedBookIds}
       bookCards={$bookCards$}
-      on:bookClick={(ev) => onBookClick(ev.detail.id)}
-      on:removeBookClick={(ev) => removeBooks([ev.detail.id])}
+      onbookClick={({ id }) => onBookClick(id)}
+      onremoveBookClick={({ id }) => removeBooks([id])}
     />
   {:else}
     <div class="flex justify-center pt-44 text-gray-400 text-opacity-40">

@@ -4,26 +4,28 @@
   import type { BookCardProps } from '$lib/components/book-card/book-card-props';
   import Popover from '$lib/components/popover/popover.svelte';
   import { dummyFn } from '$lib/functions/utils';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let bookCards: BookCardProps[] = [];
-  export let currentBookId: number | undefined;
-  export let selectedBookIds: ReadonlySet<number>;
+  interface Props {
+    bookCards?: BookCardProps[];
+    currentBookId?: number | undefined;
+    selectedBookIds: ReadonlySet<number>;
+    onbookClick?: (data: { id: number }) => void;
+    onremoveBookClick?: (data: { id: number }) => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    bookClick: {
-      id: number;
-    };
-    removeBookClick: {
-      id: number;
-    };
-  }>();
+  let {
+    bookCards = [],
+    currentBookId,
+    selectedBookIds,
+    onbookClick,
+    onremoveBookClick
+  }: Props = $props();
 
-  let hoveringBookId: number | undefined;
+  let hoveringBookId: number | undefined = $state(undefined);
 
   function onBookCardClick(id: number) {
-    dispatch('bookClick', { id });
+    onbookClick?.({ id });
   }
 
   function getCardDateInfo(dateTime: number) {
@@ -37,8 +39,8 @@
       role="banner"
       class="relative"
       class:opacity-60={bookCard.isPlaceholder}
-      on:mouseenter={() => (hoveringBookId = bookCard.id)}
-      on:mouseleave={() => (hoveringBookId = undefined)}
+      onmouseenter={() => (hoveringBookId = bookCard.id)}
+      onmouseleave={() => (hoveringBookId = undefined)}
     >
       <div
         class="mdc-elevation--z1 hover:mdc-elevation--z8 mdc-elevation-transition relative overflow-hidden"
@@ -53,8 +55,8 @@
             role="button"
             title="Book selected"
             class="absolute inset-0 bg-gray-700 bg-opacity-20"
-            on:click={() => onBookCardClick(bookCard.id)}
-            on:keyup={dummyFn}
+            onclick={() => onBookCardClick(bookCard.id)}
+            onkeyup={dummyFn}
           >
             <Fa class="absolute left-2 top-2 flex text-xl text-white" icon={faCheckCircle} />
           </div>
@@ -89,8 +91,8 @@
           tabindex="0"
           role="button"
           class="mdc-elevation--z2 hover:mdc-elevation--z8 mdc-elevation-transition absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-400"
-          on:click={() => dispatch('removeBookClick', { id: bookCard.id })}
-          on:keyup={dummyFn}
+          onclick={() => onremoveBookClick?.({ id: bookCard.id })}
+          onkeyup={dummyFn}
         >
           <svg role="img" class="w-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504 504">
             <path

@@ -220,9 +220,7 @@
         request.titlesToCheck.add(dataList[index].title);
       }
 
-      handleDeleteRequest(
-        new CustomEvent<StatisticsDeleteRequest>('delete', { detail: request })
-      ).finally(() => {
+      handleDeleteRequest(request).finally(() => {
         tick().then(() => dialogManager.dialogs$.next([{ component: '<div/>' }]));
       });
     }),
@@ -324,8 +322,11 @@
   }
 
   async function handleDeleteRequest({
-    detail: { startDate, endDate, titlesToCheck, takeAsIs }
-  }: CustomEvent<StatisticsDeleteRequest>) {
+    startDate,
+    endDate,
+    titlesToCheck,
+    takeAsIs
+  }: StatisticsDeleteRequest) {
     let titlesToDelete = new Set<string>();
 
     $statisticsActionInProgress$ = true;
@@ -472,8 +473,12 @@
   }
 
   async function handleEditRequest({
-    detail: { dateKey, title, newReadingTime, newCharactersRead, resetMinMaxValues }
-  }: CustomEvent<StatisticsEditRequest>) {
+    dateKey,
+    title,
+    newReadingTime,
+    newCharactersRead,
+    resetMinMaxValues
+  }: StatisticsEditRequest) {
     $statisticsActionInProgress$ = true;
 
     const statisticIndex = statisticsData.findIndex(
@@ -837,8 +842,8 @@
     <StatisticsSummary
       {aggregratedStatistics}
       {statisticsDateRangeLabel}
-      on:delete={handleDeleteRequest}
-      on:edit={handleEditRequest}
+      ondelete={handleDeleteRequest}
+      onedit={handleEditRequest}
     />
   {/if}
 {/if}

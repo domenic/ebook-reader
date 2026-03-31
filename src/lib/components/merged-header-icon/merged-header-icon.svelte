@@ -1,6 +1,5 @@
 <script lang="ts">
   import Fa from 'svelte-fa';
-  import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
@@ -9,18 +8,27 @@
   import { pagePath } from '$lib/data/env';
   import { dummyFn } from '$lib/functions/utils';
 
-  export let leavePageLink = '';
-  export let items = [mergeEntries.MANAGE, mergeEntries.SETTINGS, mergeEntries.BUG_REPORT];
-  export let mergeTo = mergeEntries.MANAGE;
+  interface Props {
+    items?: (typeof mergeEntries)[keyof typeof mergeEntries][];
+    mergeTo?: (typeof mergeEntries)[keyof typeof mergeEntries];
+    onaction?: (target: string) => void;
+  }
 
-  const dispatch = createEventDispatcher<{ action: string }>();
+  let {
+    items = [mergeEntries.MANAGE, mergeEntries.SETTINGS, mergeEntries.BUG_REPORT],
+    mergeTo = mergeEntries.MANAGE,
+    onaction
+  }: Props = $props();
 
-  const actionItems = items.filter((item) => item.routeId !== $page.route.id);
+  let actionItems = $derived(items.filter((item) => item.routeId !== $page.route.id));
+  let leavePageLink = $derived(
+    actionItems.length === 1 && actionItems[0].routeId ? actionItems[0].routeId : ''
+  );
 
-  let menuElm: Popover;
+  let menuElm: Popover = $state(undefined!);
 
   function handleActionMenuItem(target: string) {
-    dispatch('action', target);
+    onaction?.(target);
 
     if (
       !(target === mergeEntries.FILE_IMPORT.label || target === mergeEntries.FOLDER_IMPORT.label)
@@ -33,10 +41,6 @@
     if (action?.routeId) {
       goto(`${pagePath}${action.routeId}`);
     }
-  }
-
-  if (actionItems.length === 1 && actionItems[0].routeId) {
-    leavePageLink = actionItems[0].routeId;
   }
 </script>
 
@@ -55,8 +59,8 @@
         role="button"
         title={actionItem.title}
         class={labelIconClasses}
-        on:click={() => handleActionMenuItem(actionItem.label)}
-        on:keyup={dummyFn}
+        onclick={() => handleActionMenuItem(actionItem.label)}
+        onkeyup={dummyFn}
       >
         <Fa icon={actionItem.icon} class="text-sm xl:text-xs" />
         <span>{actionItem.label}{actionItem.routeId ? ' ↗' : ''}</span>
@@ -83,8 +87,8 @@
               role="button"
               class="px-4 py-2 text-sm hover:bg-white hover:text-gray-700"
               title={actionItem.title}
-              on:click={() => handleActionMenuItem(actionItem.label)}
-              on:keyup={dummyFn}
+              onclick={() => handleActionMenuItem(actionItem.label)}
+              onkeyup={dummyFn}
             >
               {actionItem.label}
             </div>
