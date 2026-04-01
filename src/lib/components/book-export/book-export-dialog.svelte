@@ -18,20 +18,23 @@
     oneDriveStorageSource$
   } from '$lib/data/store';
   import { executeReplicate$ } from '$lib/functions/replication/replication-progress';
-  import { createEventDispatcher } from 'svelte';
 
-  let icons = [
+  interface Props {
+    onclose?: () => void;
+  }
+
+  let { onclose }: Props = $props();
+
+  const baseIcons = [
     { ...getStorageIconData(StorageKey.BACKUP), source: StorageKey.BACKUP, label: 'Zip File' },
     { ...getStorageIconData(StorageKey.BROWSER), source: StorageKey.BROWSER, label: 'Browser DB' }
   ];
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let icons = $derived.by(() => {
+    if (!browser) return baseIcons;
 
-  $: if (browser) {
-    icons = [
-      ...icons,
+    return [
+      ...baseIcons,
       ...(isStorageSourceAvailable(StorageKey.GDRIVE, $gDriveStorageSource$, window)
         ? [{ ...getStorageIconData(StorageKey.GDRIVE), source: StorageKey.GDRIVE, label: 'GDrive' }]
         : []),
@@ -48,36 +51,38 @@
         ? [{ ...getStorageIconData(StorageKey.FS), source: StorageKey.FS, label: 'Filesystem' }]
         : [])
     ].filter((icon) => icon.source !== $storageSource$);
-  }
+  });
 
   function replicateData() {
     executeReplicate$.next();
 
-    dispatch('close');
+    onclose?.();
   }
 </script>
 
 <DialogTemplate>
-  <svelte:fragment slot="content">
+  {#snippet content()}
     <BookExportSelection
       {icons}
       bind:target={$lastExportedTarget$}
       bind:dataToReplicate={$lastExportedTypes$}
     />
-  </svelte:fragment>
-  <div class="flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => dispatch('close')}>
-      Cancel
-      <Ripple />
-    </button>
-    <button
-      class={buttonClasses}
-      class:cursor-not-allowed={!$lastExportedTypes$.length}
-      disabled={!$lastExportedTypes$.length}
-      on:click={replicateData}
-    >
-      Start
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="flex grow justify-between">
+      <button class={buttonClasses} onclick={() => onclose?.()}>
+        Cancel
+        <Ripple />
+      </button>
+      <button
+        class={buttonClasses}
+        class:cursor-not-allowed={!$lastExportedTypes$.length}
+        disabled={!$lastExportedTypes$.length}
+        onclick={replicateData}
+      >
+        Start
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>

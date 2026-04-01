@@ -23,44 +23,74 @@
   import { lastBlurredTrackerItems$, skipKeyDownListener$ } from '$lib/data/store';
   import { secondsToMinutes, toTimeString } from '$lib/functions/statistic-util';
   import { caluclatePercentage, dummyFn } from '$lib/functions/utils';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let fontColor: string;
-  export let backgroundColor: string;
-  export let actionInProgress: boolean;
-  export let hadError: boolean;
-  export let currentReadingGoal: ReadingGoal | undefined;
-  export let currentTimeGoal: number;
-  export let currentCharacterGoal: number;
-  export let currentReadingGoalStart: string;
-  export let currentReadingGoalEnd: string;
-  export let remainingTimeInReadingGoalWindow: string;
-  export let wasTrackerPaused: boolean;
-  export let canSaveStatistics: boolean;
-  export let timeToFinishBook: string;
-  export let sectionData: SectionWithProgress[];
-  export let exploredCharCount: number;
-  export let lastExploredCharCount: number;
-  export let previousLastExploredCharCount: number;
-  export let frozenPosition: number;
-  export let trackingHistory: TrackingHistory[];
-  export let sessionStatistics: BooksDbStatistic;
-  export let todaysStatistics: BooksDbStatistic;
-  export let allTimeStatistics: BooksDbStatistic;
-  export let bookCompletionStatistics:
-    | Omit<BooksDbStatistic, 'title' | 'lastStatisticModified'>
-    | undefined;
-  export let autoScrollerStatistics: BooksDbStatistic | undefined;
-  export let bookStartDate: string;
+  interface Props {
+    fontColor: string;
+    backgroundColor: string;
+    actionInProgress: boolean;
+    hadError: boolean;
+    currentReadingGoal: ReadingGoal | undefined;
+    currentTimeGoal: number;
+    currentCharacterGoal: number;
+    currentReadingGoalStart: string;
+    currentReadingGoalEnd: string;
+    remainingTimeInReadingGoalWindow: string;
+    wasTrackerPaused: boolean;
+    canSaveStatistics: boolean;
+    timeToFinishBook: string;
+    sectionData: SectionWithProgress[];
+    exploredCharCount: number;
+    lastExploredCharCount: number;
+    previousLastExploredCharCount: number;
+    frozenPosition: number;
+    trackingHistory: TrackingHistory[];
+    sessionStatistics: BooksDbStatistic;
+    todaysStatistics: BooksDbStatistic;
+    allTimeStatistics: BooksDbStatistic;
+    bookCompletionStatistics: Omit<BooksDbStatistic, 'title' | 'lastStatisticModified'> | undefined;
+    autoScrollerStatistics: BooksDbStatistic | undefined;
+    bookStartDate: string;
+    ontrackermenuclosed?: () => void;
+    onupdatecurrentlocation?: () => void;
+    onfreezecurrentlocation?: () => void;
+    onsavestatistics?: () => void;
+    onrevertstatistic?: (item: TrackingHistory) => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    trackerMenuClosed: void;
-    updateCurrentLocation: void;
-    freezeCurrentLocation: void;
-    saveStatistics: void;
-    revertStatistic: TrackingHistory;
-  }>();
+  let {
+    fontColor,
+    backgroundColor,
+    actionInProgress,
+    hadError,
+    currentReadingGoal,
+    currentTimeGoal,
+    currentCharacterGoal,
+    currentReadingGoalStart,
+    currentReadingGoalEnd,
+    remainingTimeInReadingGoalWindow,
+    wasTrackerPaused = $bindable(),
+    canSaveStatistics,
+    timeToFinishBook,
+    sectionData,
+    exploredCharCount,
+    lastExploredCharCount,
+    previousLastExploredCharCount,
+    frozenPosition,
+    trackingHistory,
+    sessionStatistics,
+    todaysStatistics,
+    allTimeStatistics,
+    bookCompletionStatistics,
+    autoScrollerStatistics,
+    bookStartDate,
+    ontrackermenuclosed,
+    onupdatecurrentlocation,
+    onfreezecurrentlocation,
+    onsavestatistics,
+    onrevertstatistic
+  }: Props = $props();
 
   const actions = [
     { icon: faPlay, event: 'toggleTracker', title: 'Toggle Tracker' },
@@ -71,36 +101,44 @@
 
   const trackingItemsPerPage = 15;
 
-  let trackingHistoryIndex = 0;
-  let timeToFinishChapter = '';
+  let trackingHistoryIndex = $state(0);
+  let timeToFinishChapter = $state('');
 
-  $: allStatistics = autoScrollerStatistics
-    ? [
-        { id: 'Current Session', ...sessionStatistics },
-        { id: 'Today', ...todaysStatistics },
-        { id: 'All Time', ...allTimeStatistics },
-        ...(bookCompletionStatistics
-          ? [{ id: 'Book Completion', ...bookCompletionStatistics }]
-          : []),
-        { id: 'Autoscroller', ...autoScrollerStatistics }
-      ]
-    : [
-        { id: 'Current Session', ...sessionStatistics },
-        { id: 'Today', ...todaysStatistics },
-        { id: 'All Time', ...allTimeStatistics },
-        ...(bookCompletionStatistics
-          ? [{ id: 'Book Completion', ...bookCompletionStatistics }]
-          : [])
-      ];
-
-  $: currentTrackingHistoryIndex = Math.max(0, trackingHistoryIndex * trackingItemsPerPage);
-
-  $: trackingHistoryItems = trackingHistory.slice(
-    currentTrackingHistoryIndex,
-    currentTrackingHistoryIndex + trackingItemsPerPage
+  let allStatistics = $derived(
+    autoScrollerStatistics
+      ? [
+          { id: 'Current Session', ...sessionStatistics },
+          { id: 'Today', ...todaysStatistics },
+          { id: 'All Time', ...allTimeStatistics },
+          ...(bookCompletionStatistics
+            ? [{ id: 'Book Completion', ...bookCompletionStatistics }]
+            : []),
+          { id: 'Autoscroller', ...autoScrollerStatistics }
+        ]
+      : [
+          { id: 'Current Session', ...sessionStatistics },
+          { id: 'Today', ...todaysStatistics },
+          { id: 'All Time', ...allTimeStatistics },
+          ...(bookCompletionStatistics
+            ? [{ id: 'Book Completion', ...bookCompletionStatistics }]
+            : [])
+        ]
   );
 
-  $: hasNextPage = trackingHistory.length > currentTrackingHistoryIndex + trackingItemsPerPage;
+  let currentTrackingHistoryIndex = $derived(
+    Math.max(0, trackingHistoryIndex * trackingItemsPerPage)
+  );
+
+  let trackingHistoryItems = $derived(
+    trackingHistory.slice(
+      currentTrackingHistoryIndex,
+      currentTrackingHistoryIndex + trackingItemsPerPage
+    )
+  );
+
+  let hasNextPage = $derived(
+    trackingHistory.length > currentTrackingHistoryIndex + trackingItemsPerPage
+  );
 
   onMount(() => {
     $skipKeyDownListener$ = true;
@@ -141,9 +179,13 @@
         wasTrackerPaused = !wasTrackerPaused;
         break;
       case 'updateCurrentLocation':
+        onupdatecurrentlocation?.();
+        break;
       case 'freezeCurrentLocation':
+        onfreezecurrentlocation?.();
+        break;
       case 'saveStatistics':
-        dispatch(event);
+        onsavestatistics?.();
         break;
 
       default:
@@ -188,8 +230,8 @@
     role="button"
     title="Close Tracker Menu"
     class="flex items-center hover:text-red-500 md:items-center"
-    on:click={() => dispatch('trackerMenuClosed')}
-    on:keyup={dummyFn}
+    onclick={() => ontrackermenuclosed?.()}
+    onkeyup={dummyFn}
   >
     <Fa icon={faXmark} />
   </div>
@@ -263,8 +305,8 @@
                 role="button"
                 class="ml-4 hover:text-red-500"
                 title={action.title}
-                on:click={() => executeAction(action.event)}
-                on:keyup={dummyFn}
+                onclick={() => executeAction(action.event)}
+                onkeyup={dummyFn}
               >
                 <Fa icon={getActionIcon(action, wasTrackerPaused)} />
               </div>
@@ -285,7 +327,7 @@
         <button
           class="text-left"
           class:mt-3={statistic.id !== 'All Time' && statistic.id !== 'Book Completion'}
-          on:click={() => handleBlurredKey('charactersRead')}
+          onclick={() => handleBlurredKey('charactersRead')}
         >
           Characters Read:
         </button>
@@ -294,58 +336,58 @@
           tabindex="0"
           class:blur={$lastBlurredTrackerItems$.has('charactersRead')}
           class:mt-3={statistic.id !== 'All Time' && statistic.id !== 'Book Completion'}
-          on:click={() => handleBlurredKey('charactersRead')}
-          on:keyup={dummyFn}
+          onclick={() => handleBlurredKey('charactersRead')}
+          onkeyup={dummyFn}
         >
           {statistic.charactersRead}
         </div>
-        <button class="text-left" on:click={() => handleBlurredKey('lastReadingSpeed')}>
+        <button class="text-left" onclick={() => handleBlurredKey('lastReadingSpeed')}>
           Reading Speed:
         </button>
         <div
           role="button"
           tabindex="0"
           class:blur={$lastBlurredTrackerItems$.has('lastReadingSpeed')}
-          on:click={() => handleBlurredKey('lastReadingSpeed')}
-          on:keyup={dummyFn}
+          onclick={() => handleBlurredKey('lastReadingSpeed')}
+          onkeyup={dummyFn}
         >
           {statistic.lastReadingSpeed} / h
         </div>
-        <button class="text-left" on:click={() => handleBlurredKey('readingTime')}>
+        <button class="text-left" onclick={() => handleBlurredKey('readingTime')}>
           Reading Time:
         </button>
         <div
           role="button"
           tabindex="0"
           class:blur={$lastBlurredTrackerItems$.has('readingTime')}
-          on:click={() => handleBlurredKey('readingTime')}
-          on:keyup={dummyFn}
+          onclick={() => handleBlurredKey('readingTime')}
+          onkeyup={dummyFn}
         >
           {toTimeString(statistic.readingTime)}
         </div>
         {#if statistic.id === 'Current Session'}
-          <button class="text-left" on:click={() => handleBlurredKey('finishETA')}>
+          <button class="text-left" onclick={() => handleBlurredKey('finishETA')}>
             Time to Finish Book:
           </button>
           <div
             role="button"
             tabindex="0"
             class:blur={$lastBlurredTrackerItems$.has('finishETA')}
-            on:click={() => handleBlurredKey('finishETA')}
-            on:keyup={dummyFn}
+            onclick={() => handleBlurredKey('finishETA')}
+            onkeyup={dummyFn}
           >
             {timeToFinishBook}
           </div>
           {#if timeToFinishChapter}
-            <button class="text-left" on:click={() => handleBlurredKey('finishChapterETA')}>
+            <button class="text-left" onclick={() => handleBlurredKey('finishChapterETA')}>
               Time to Finish Chapter:
             </button>
             <div
               role="button"
               tabindex="0"
               class:blur={$lastBlurredTrackerItems$.has('finishChapterETA')}
-              on:click={() => handleBlurredKey('finishChapterETA')}
-              on:keyup={dummyFn}
+              onclick={() => handleBlurredKey('finishChapterETA')}
+              onkeyup={dummyFn}
             >
               {timeToFinishChapter}
             </div>
@@ -383,7 +425,7 @@
                 <button
                   title="Revert Item"
                   class="hover:text-red-500"
-                  on:click={() => dispatch('revertStatistic', trackingHistoryItem)}
+                  onclick={() => onrevertstatistic?.(trackingHistoryItem)}
                 >
                   <Fa icon={faTrash} />
                 </button>
@@ -403,7 +445,7 @@
               disabled={currentTrackingHistoryIndex === 0}
               class:opacity-50={currentTrackingHistoryIndex === 0}
               class:cursor-not-allowed={currentTrackingHistoryIndex === 0}
-              on:click={() => (trackingHistoryIndex -= 1)}
+              onclick={() => (trackingHistoryIndex -= 1)}
             >
               <Fa icon={faChevronLeft} />
             </button>
@@ -412,7 +454,7 @@
               disabled={!hasNextPage}
               class:opacity-50={!hasNextPage}
               class:cursor-not-allowed={!hasNextPage}
-              on:click={() => (trackingHistoryIndex += 1)}
+              onclick={() => (trackingHistoryIndex += 1)}
             >
               <Fa icon={faChevronRight} />
             </button>
@@ -422,7 +464,7 @@
     </div>
   {/each}
   {#if actionInProgress}
-    <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]" />
+    <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]"></div>
     <div class="absolute inset-0 flex h-full w-full items-center justify-center text-7xl">
       <Fa icon={faSpinner} spin />
     </div>

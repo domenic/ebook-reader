@@ -34,13 +34,15 @@
     lastStatisticsRangeTemplate$,
     lastStatisticsStartDate$
   } from '$lib/data/store';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import Fa from 'svelte-fa';
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    statisticsDateChange: StatisticsDateChange;
-  }>();
+  interface Props {
+    onclose?: () => void;
+    onstatisticsDateChange?: (data: StatisticsDateChange) => void;
+  }
+
+  let { onclose, onstatisticsDateChange }: Props = $props();
 
   const weekDays = [...daysOfWeek.slice(1, 7), daysOfWeek[0]].map((day, index) => {
     if (day === 'Sunday') {
@@ -49,9 +51,17 @@
     return { day, index: index + 1 };
   });
 
-  $: selectedStatisticsStartDate = $lastStatisticsStartDate$;
+  let selectedStatisticsStartDate = $state($lastStatisticsStartDate$);
 
-  $: selectedStatisticsEndDate = $lastStatisticsEndDate$;
+  let selectedStatisticsEndDate = $state($lastStatisticsEndDate$);
+
+  $effect(() => {
+    selectedStatisticsStartDate = $lastStatisticsStartDate$;
+  });
+
+  $effect(() => {
+    selectedStatisticsEndDate = $lastStatisticsEndDate$;
+  });
 
   onMount(() => {
     dialogManager.dialogs$.next([{ component: '<div/>' }]);
@@ -73,20 +83,20 @@
 </script>
 
 <div class="flex items-center p-4">
-  <button class="flex items-end md:items-center" on:click={() => dispatch('close')}>
+  <button class="flex items-end md:items-center" onclick={() => onclose?.()}>
     <Fa icon={faXmark} />
   </button>
   <div class="flex flex-1 justify-end">
-    <button class="mr-2 sm:mr-4 hover:text-red-500" on:click={() => exportStatisticsData(false)}>
+    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => exportStatisticsData(false)}>
       Export Selection
     </button>
-    <button class="mr-2 sm:mr-4 hover:text-red-500" on:click={() => deleteStatisticsData(false)}>
+    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => deleteStatisticsData(false)}>
       Delete Selection
     </button>
-    <button class="mr-2 sm:mr-4 hover:text-red-500" on:click={() => exportStatisticsData()}>
+    <button class="mr-2 sm:mr-4 hover:text-red-500" onclick={() => exportStatisticsData()}>
       Export All
     </button>
-    <button class="hover:text-red-500" on:click={() => deleteStatisticsData()}>Delete All</button>
+    <button class="hover:text-red-500" onclick={() => deleteStatisticsData()}>Delete All</button>
   </div>
 </div>
 <div class="flex-1 p-4 overflow-auto">
@@ -118,8 +128,8 @@
         type="date"
         class="text-black"
         bind:value={selectedStatisticsStartDate}
-        on:change={() =>
-          dispatch('statisticsDateChange', {
+        onchange={() =>
+          onstatisticsDateChange?.({
             isStartDate: true,
             dateString: selectedStatisticsStartDate
           })}
@@ -127,8 +137,8 @@
     </div>
     <div class="flex flex-col justify-between pt-4 mx-2 text-xl sm:mx-0">
       <button
-        on:click={() =>
-          dispatch('statisticsDateChange', {
+        onclick={() =>
+          onstatisticsDateChange?.({
             isStartDate: false,
             dateString: selectedStatisticsStartDate
           })}
@@ -136,8 +146,8 @@
         <Fa icon={faRightLong} />
       </button>
       <button
-        on:click={() =>
-          dispatch('statisticsDateChange', {
+        onclick={() =>
+          onstatisticsDateChange?.({
             isStartDate: true,
             dateString: selectedStatisticsEndDate
           })}
@@ -152,8 +162,8 @@
         type="date"
         class="text-black"
         bind:value={selectedStatisticsEndDate}
-        on:change={() =>
-          dispatch('statisticsDateChange', {
+        onchange={() =>
+          onstatisticsDateChange?.({
             isStartDate: false,
             dateString: selectedStatisticsEndDate
           })}
@@ -172,7 +182,7 @@
   </div>
   <button
     class="text-left mt-3 hover:text-red-500"
-    on:click={() => setStatisticsDatesToAllTime$.next()}
+    onclick={() => setStatisticsDatesToAllTime$.next()}
   >
     Set to All Time for selected Book Titles
   </button>
@@ -182,7 +192,9 @@
         contentText={'Reading Time Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem;"
       >
-        <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="timeDataSource">Time Data Source</label>
       </Popover>
       <select id="timeDataSource" class="text-black" bind:value={$lastReadingTimeDataSource$}>
@@ -198,7 +210,9 @@
         contentText={'Characters Read Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem; max-width: 20rem;"
       >
-        <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="charactersSource">Characters Data Source</label>
       </Popover>
       <select id="charactersSource" class="text-black" bind:value={$lastCharactersDataSource$}>
@@ -214,7 +228,9 @@
         contentText={'Reading Speed Attribute which should be used for the Summary Tab'}
         contentStyles="padding: 0.5rem;"
       >
-        <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+        {#snippet icon()}
+          <Fa icon={faCircleQuestion} class="mx-2" />
+        {/snippet}
         <label for="speedSource">Speed Data Source</label>
       </Popover>
       <select id="speedSource" class="text-black" bind:value={$lastReadingSpeedDataSource$}>
@@ -231,7 +247,9 @@
       contentText={'Determines on which primary Attribute the Data will be grouped for the Summary Tab'}
       contentStyles="padding: 0.5rem;"
     >
-      <Fa icon={faCircleQuestion} slot="icon" class="mx-2" />
+      {#snippet icon()}
+        <Fa icon={faCircleQuestion} class="mx-2" />
+      {/snippet}
       <label for="primaryAggregration">Primary Aggregration</label>
     </Popover>
     <select

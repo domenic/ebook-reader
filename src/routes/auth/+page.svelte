@@ -4,9 +4,11 @@
   import { convertAuthErrorResponse } from '$lib/functions/replication/error-handler';
   import Fa from 'svelte-fa';
 
-  $: if (browser) {
-    handleAuthRequest();
-  }
+  $effect(() => {
+    if (browser) {
+      handleAuthRequest();
+    }
+  });
 
   async function handleAuthRequest() {
     const url = new URL(window.location.href);

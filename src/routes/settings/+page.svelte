@@ -82,9 +82,9 @@
     setStorageQuota();
   });
 
-  let activeSettings = 'Reader';
+  let activeSettings = $state('Reader');
 
-  let storageQuota = '';
+  let storageQuota = $state('');
 
   const setPersistentStorage$ = persistentStorage$.pipe(
     tap((value) => {

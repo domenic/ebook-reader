@@ -78,9 +78,12 @@
     enableReaderWakeLock$
   } from '$lib/data/store';
 
-  export let title = 'Error';
+  interface Props {
+    title?: string;
+    message: string;
+  }
 
-  export let message: string;
+  let { title = 'Error', message }: Props = $props();
 
   const encodedLog = encodeURIComponent(
     JSON.stringify(
@@ -171,7 +174,7 @@
         },
         log: logger.history
       },
-      null,
+      undefined,
       2
     )
   );
@@ -179,11 +182,13 @@
 </script>
 
 <DialogTemplate>
-  <svelte:fragment slot="header">{title}</svelte:fragment>
-  <svelte:fragment slot="content">
+  {#snippet header()}
+    {title}
+  {/snippet}
+  {#snippet content()}
     <p>{message}</p>
-  </svelte:fragment>
-  <svelte:fragment slot="footer">
+  {/snippet}
+  {#snippet footer()}
     <a
       class={buttonClasses}
       href="https://github.com/ttu-ttu/ebook-reader"
@@ -197,5 +202,5 @@
       Download Report
       <Ripple />
     </a>
-  </svelte:fragment>
+  {/snippet}
 </DialogTemplate>

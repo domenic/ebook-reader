@@ -2,20 +2,27 @@
   import DialogTemplate from '$lib/components/dialog-template.svelte';
   import Ripple from '$lib/components/ripple.svelte';
   import { buttonClasses } from '$lib/css-classes';
-  import { createEventDispatcher } from 'svelte';
 
-  export let dialogHeader: string;
-  export let showCancel = true;
-  export let minValue = 1;
-  export let maxValue = 1;
-  export let resolver: (arg0: number | undefined) => void;
+  interface Props {
+    dialogHeader: string;
+    showCancel?: boolean;
+    minValue?: number;
+    maxValue?: number;
+    resolver: (arg0: number | undefined) => void;
+    onclose?: () => void;
+  }
 
-  let target = 1;
-  let error = '';
+  let {
+    dialogHeader,
+    showCancel = true,
+    minValue = 1,
+    maxValue = 1,
+    resolver,
+    onclose
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let target = $state(1);
+  let error = $state('');
 
   function closeDialog(position?: number) {
     if (typeof position === 'number' && (position < minValue || position > maxValue)) {
@@ -23,38 +30,44 @@
       return;
     }
     resolver(position);
-    dispatch('close');
+    onclose?.();
   }
 </script>
 
 <DialogTemplate>
-  <svelte:fragment slot="header">{dialogHeader}</svelte:fragment>
-  <div class="flex flex-col text-sm sm:text-base" slot="content">
-    <input
-      type="number"
-      min={minValue}
-      max={maxValue}
-      bind:value={target}
-      on:keyup={(evt) => {
-        if (evt.key === 'Enter') {
-          closeDialog(target);
-        }
-      }}
-    />
-    <div class="text-red-500 mt-4">{error}</div>
-  </div>
-  <div class="flex grow justify-between" slot="footer">
-    <button
-      class={buttonClasses}
-      class:invisible={!showCancel}
-      on:click={() => closeDialog(undefined)}
-    >
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} on:click={() => closeDialog(target)}>
-      Confirm
-      <Ripple />
-    </button>
-  </div>
+  {#snippet header()}
+    {dialogHeader}
+  {/snippet}
+  {#snippet content()}
+    <div class="flex flex-col text-sm sm:text-base">
+      <input
+        type="number"
+        min={minValue}
+        max={maxValue}
+        bind:value={target}
+        onkeyup={(evt) => {
+          if (evt.key === 'Enter') {
+            closeDialog(target);
+          }
+        }}
+      />
+      <div class="text-red-500 mt-4">{error}</div>
+    </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="flex grow justify-between">
+      <button
+        class={buttonClasses}
+        class:invisible={!showCancel}
+        onclick={() => closeDialog(undefined)}
+      >
+        Cancel
+        <Ripple />
+      </button>
+      <button class={buttonClasses} onclick={() => closeDialog(target)}>
+        Confirm
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>

@@ -3,17 +3,26 @@
   import type { ToggleOption } from '$lib/components/button-toggle-group/toggle-option';
   import Ripple from '$lib/components/ripple.svelte';
   import { availableThemes } from '$lib/data/theme-option';
-  import { createEventDispatcher } from 'svelte';
+  import type { Snippet } from 'svelte';
   import Fa from 'svelte-fa';
 
-  export let options: ToggleOption<any>[];
-  export let selectedOptionId: any;
-  export let invertColors = false;
+  interface Props {
+    options: ToggleOption<any>[];
+    selectedOptionId: any;
+    invertColors?: boolean;
+    onedit?: (id: string) => void;
+    ondelete?: (id: string) => void;
+    children?: Snippet;
+  }
 
-  const dispatch = createEventDispatcher<{
-    edit: string;
-    delete: string;
-  }>();
+  let {
+    options,
+    selectedOptionId = $bindable(),
+    invertColors = false,
+    onedit,
+    ondelete,
+    children
+  }: Props = $props();
 
   function mapToStyleString(style: Record<string, any> | undefined) {
     if (!style) return '';
@@ -38,23 +47,25 @@
         class:bg-white={(option.id === selectedOptionId && invertColors) ||
           (option.id !== selectedOptionId && !invertColors)}
         style={mapToStyleString(option.style)}
-        on:click={() => (selectedOptionId = option.id)}
+        onclick={() => (selectedOptionId = option.id)}
       >
         {option.text}
         <Ripple />
       </button>
       {#if option.showIcons && option.id === selectedOptionId && !availableThemes.has(option.id)}
         <div class="flex flex-col justify-around mr-2">
-          <button on:click={() => dispatch('edit', option.id)}>
-            <Fa icon={faPen} slot="icon" />
+          <button onclick={() => onedit?.(option.id)}>
+            <Fa icon={faPen} />
           </button>
-          <button on:click={() => dispatch('delete', option.id)}>
-            <Fa icon={faTrash} slot="icon" />
+          <button onclick={() => ondelete?.(option.id)}>
+            <Fa icon={faTrash} />
           </button>
         </div>
       {/if}
     </div>
   {/each}
 
-  <slot />
+  {#if children}
+    {@render children()}
+  {/if}
 </div>

@@ -94,23 +94,23 @@
     share()
   );
 
-  let selectedBookIds: ReadonlySet<number> = new Set();
-  let selectMode = false;
-  let cancelToken = new AbortController();
-  let cancelSignal = cancelToken.signal;
-  let cancelTooltip = '';
-  let replicationProgress = 0;
-  let replicationToProgress = 0;
-  let replicationProgressRemaining = '~ ??:??:??';
+  let selectedBookIds: ReadonlySet<number> = $state(new Set());
+  let selectMode = $state(false);
+  let cancelToken = $state(new AbortController());
+  let cancelSignal = $derived(cancelToken.signal);
+  let cancelTooltip = $state('');
+  let replicationProgress = $state(0);
+  let replicationToProgress = $state(0);
+  let replicationProgressRemaining = $state('~ ??:??:??');
   let replicationDone = new Subject<void>();
   let progressBase = 0;
   let executionStart: number;
 
-  $: {
+  $effect(() => {
     if (!selectMode) {
       selectedBookIds = new Set();
     }
-  }
+  });
 
   onDestroy(() => dialogManager.dialogs$.next([]));
 
@@ -338,7 +338,6 @@
     logger.clearHistory();
 
     cancelToken = new AbortController();
-    cancelSignal = cancelToken.signal;
   }
 
   function resetProgress() {
@@ -650,19 +649,19 @@
     {replicationToProgress}
     {replicationProgressRemaining}
     bind:selectMode
-    on:selectAllClick={onSelectAllBooks}
-    on:removeClick={() => removeBooks(Array.from(selectedBookIds))}
-    on:filesChange={(ev) => onFilesChange(ev.detail)}
-    on:bugReportClick={onBugReportClick}
-    on:cancelReplication={() => {
+    onselectAllClick={onSelectAllBooks}
+    onremoveClick={() => removeBooks(Array.from(selectedBookIds))}
+    onfilesChange={onFilesChange}
+    onbugReportClick={onBugReportClick}
+    oncancelReplication={() => {
       if (!cancelSignal.aborted) {
         cancelToken.abort();
         replicationProgressRemaining = 'Canceling ...';
       }
     }}
-    on:deleteStatistics={onDeleteStatistics}
-    on:replicateData={onReplicateData}
-    on:importBackup={(ev) => onImportBackup(ev.detail)}
+    ondeleteStatistics={onDeleteStatistics}
+    onreplicateData={onReplicateData}
+    onimportBackup={onImportBackup}
   />
 </div>
 
@@ -670,11 +669,13 @@
   tabindex="0"
   role="button"
   class="{pxScreen} h-full pt-16 xl:pt-14"
-  on:dragenter={(ev) => ev.preventDefault()}
-  on:dragover={(ev) => ev.preventDefault()}
-  on:dragend={(ev) => ev.preventDefault()}
-  on:drop={(ev) => ev.preventDefault()}
-  on:drop={(ev) => getDropEventFiles(ev).then(onFilesChange)}
+  ondragenter={(ev) => ev.preventDefault()}
+  ondragover={(ev) => ev.preventDefault()}
+  ondragend={(ev) => ev.preventDefault()}
+  ondrop={(ev) => {
+    ev.preventDefault();
+    getDropEventFiles(ev).then(onFilesChange);
+  }}
 >
   {#if !$bookCards$ || $booksAreLoading$}
     Loading...
@@ -683,8 +684,8 @@
       currentBookId={$currentBookId$}
       {selectedBookIds}
       bookCards={$bookCards$}
-      on:bookClick={(ev) => onBookClick(ev.detail.id)}
-      on:removeBookClick={(ev) => removeBooks([ev.detail.id])}
+      onbookClick={({ id }) => onBookClick(id)}
+      onremoveBookClick={({ id }) => removeBooks([id])}
     />
   {:else}
     <div class="flex justify-center pt-44 text-gray-400 text-opacity-40">

@@ -4,7 +4,11 @@
   import HeaderTab from '$lib/components/header-tab.svelte';
   import { baseHeaderClasses, pxScreen } from '$lib/css-classes';
 
-  export let activeSettings: string;
+  interface Props {
+    activeSettings: string;
+  }
+
+  let { activeSettings = $bindable() }: Props = $props();
 
   const settingItems = [
     {
@@ -30,7 +34,7 @@
           icon={settingItem.icon}
           label={settingItem.label}
           active={activeSettings === settingItem.label}
-          on:click={() => (activeSettings = settingItem.label)}
+          onclick={() => (activeSettings = settingItem.label)}
         />
       {/each}
     </div>

@@ -6,16 +6,22 @@
   import { buttonClasses } from '$lib/css-classes';
   import { customThemes$, theme$ } from '$lib/data/store';
   import { availableThemes, type CustomThemeValue, type ThemeOption } from '$lib/data/theme-option';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
 
-  export let selectedTheme: string;
-  export let existingThemes: ToggleOption<string>[] = [];
+  interface Props {
+    selectedTheme: string;
+    existingThemes?: ToggleOption<string>[];
+    onclose?: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let { selectedTheme, existingThemes = [], onclose }: Props = $props();
 
-  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = {
+  const init = untrack(() => ({
+    selectedTheme,
+    existingThemes
+  }));
+
+  let customTheme: Record<keyof ThemeOption, CustomThemeValue> = $state({
     fontColor: { hexExpression: '#ffffff', alphaValue: 1, rgbaExpression: 'rgba(255,255,255,1)' },
     backgroundColor: {
       hexExpression: '#000000',
@@ -47,23 +53,25 @@
       alphaValue: 1,
       rgbaExpression: 'rgba(255,255,255,1)'
     }
-  };
+  });
 
-  let themeToCopy = existingThemes[0].id;
-  let themeName = '';
-  let themeNameElm: HTMLInputElement;
+  let themeToCopy = $state(init.existingThemes[0].id);
+  let themeName = $state('');
+  let themeNameElm: HTMLInputElement = $state();
 
-  $: themeStyle = `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`;
+  let themeStyle = $derived(
+    `color: ${customTheme.fontColor.rgbaExpression}; background-color: ${customTheme.backgroundColor.rgbaExpression}`
+  );
 
   onMount(() => {
-    const existingThemeObject = $customThemes$[selectedTheme];
+    const existingThemeObject = $customThemes$[init.selectedTheme];
 
     if (!existingThemeObject) {
       return;
     }
 
     customTheme = getThemeData(existingThemeObject);
-    themeName = selectedTheme;
+    themeName = init.selectedTheme;
   });
 
   function getThemeData(referenceObject: ThemeOption): Record<keyof ThemeOption, CustomThemeValue> {
@@ -92,10 +100,13 @@
     copyTheme(availableThemes.get(themeToCopy) || $customThemes$[themeToCopy]);
   }
 
-  function handleColorValueChange(
-    event: CustomEvent<{ attribute: keyof ThemeOption; value: string }>
-  ) {
-    const { attribute, value } = event.detail;
+  function handleColorValueChange({
+    attribute,
+    value
+  }: {
+    attribute: keyof ThemeOption;
+    value: string;
+  }) {
     const entry = customTheme[attribute];
 
     customTheme = {
@@ -110,10 +121,13 @@
     };
   }
 
-  function handleAlphaValueChange(
-    event: CustomEvent<{ attribute: keyof ThemeOption; value: number }>
-  ) {
-    const { attribute, value } = event.detail;
+  function handleAlphaValueChange({
+    attribute,
+    value
+  }: {
+    attribute: keyof ThemeOption;
+    value: number;
+  }) {
     const entry = customTheme[attribute];
 
     customTheme = {
@@ -152,13 +166,13 @@
       newTheme[key] = value.rgbaExpression;
     }
 
-    if (selectedTheme && selectedTheme !== themeName) {
-      delete $customThemes$[selectedTheme];
+    if (init.selectedTheme && init.selectedTheme !== themeName) {
+      delete $customThemes$[init.selectedTheme];
     }
 
     $customThemes$ = { ...$customThemes$, ...{ [themeName]: newTheme } };
     $theme$ = themeName;
-    dispatch('close');
+    onclose?.();
   }
 
   function copyTheme(theme: Record<keyof ThemeOption, string> | undefined) {
@@ -189,84 +203,88 @@
 </script>
 
 <DialogTemplate>
-  <div slot="content">
-    <div
-      class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
-    >
-      <select class="sm:col-span-2" bind:value={themeToCopy}>
-        {#each existingThemes as theme (theme.id)}
-          <option value={theme.id}>
-            {theme.id}
-          </option>
-        {/each}
-      </select>
-      <button class={buttonClasses} on:click={handleCopyTheme}
-        >Copy
+  {#snippet content()}
+    <div>
+      <div
+        class="grid grid-cols-1 gap-2 items-center overflow-auto max-h-[60vh] sm:grid-cols-[auto_auto_5rem] sm:gap-4"
+      >
+        <select class="sm:col-span-2" bind:value={themeToCopy}>
+          {#each init.existingThemes as theme (theme.id)}
+            <option value={theme.id}>
+              {theme.id}
+            </option>
+          {/each}
+        </select>
+        <button class={buttonClasses} onclick={handleCopyTheme}
+          >Copy
+          <Ripple />
+        </button>
+        <span class="hidden sm:block">Attribute</span>
+        <span class="hidden sm:block">Color</span>
+        <span class="hidden sm:block">Alpha</span>
+        <SettingsCustomThemeInput
+          label="Font"
+          attribute="fontColor"
+          values={customTheme.fontColor}
+          oncolor={handleColorValueChange}
+          onalpha={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Background"
+          attribute="backgroundColor"
+          values={customTheme.backgroundColor}
+          oncolor={handleColorValueChange}
+          onalpha={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Furigana Partial Hide Font"
+          attribute="hintFuriganaFontColor"
+          values={customTheme.hintFuriganaFontColor}
+          oncolor={handleColorValueChange}
+          onalpha={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Furigana Partial/Full Hide Shadow"
+          attribute="hintFuriganaShadowColor"
+          values={customTheme.hintFuriganaShadowColor}
+          oncolor={handleColorValueChange}
+          onalpha={handleAlphaValueChange}
+        />
+        <SettingsCustomThemeInput
+          label="Footer Font"
+          attribute="tooltipTextFontColor"
+          values={customTheme.tooltipTextFontColor}
+          oncolor={handleColorValueChange}
+          onalpha={handleAlphaValueChange}
+        />
+        <input
+          class="sm:col-span-2"
+          type="text"
+          placeholder="Theme Name"
+          bind:value={themeName}
+          bind:this={themeNameElm}
+        />
+        <button
+          class="flex justify-center items-center rounded-md border-2 border-gray-400 p-2 text-lg"
+          style={themeStyle}
+        >
+          ぁあ
+          <Ripple />
+        </button>
+      </div>
+      <div class="flex mt-4"></div>
+    </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="mt-2 flex grow justify-between">
+      <button class={buttonClasses} onclick={() => onclose?.()}>
+        Cancel
         <Ripple />
       </button>
-      <span class="hidden sm:block">Attribute</span>
-      <span class="hidden sm:block">Color</span>
-      <span class="hidden sm:block">Alpha</span>
-      <SettingsCustomThemeInput
-        label="Font"
-        attribute="fontColor"
-        values={customTheme.fontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Background"
-        attribute="backgroundColor"
-        values={customTheme.backgroundColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Furigana Partial Hide Font"
-        attribute="hintFuriganaFontColor"
-        values={customTheme.hintFuriganaFontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Furigana Partial/Full Hide Shadow"
-        attribute="hintFuriganaShadowColor"
-        values={customTheme.hintFuriganaShadowColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <SettingsCustomThemeInput
-        label="Footer Font"
-        attribute="tooltipTextFontColor"
-        values={customTheme.tooltipTextFontColor}
-        on:color={handleColorValueChange}
-        on:alpha={handleAlphaValueChange}
-      />
-      <input
-        class="sm:col-span-2"
-        type="text"
-        placeholder="Theme Name"
-        bind:value={themeName}
-        bind:this={themeNameElm}
-      />
-      <button
-        class="flex justify-center items-center rounded-md border-2 border-gray-400 p-2 text-lg"
-        style={themeStyle}
-      >
-        ぁあ
+      <button class={buttonClasses} onclick={handleSave}>
+        Save
         <Ripple />
       </button>
     </div>
-    <div class="flex mt-4" />
-  </div>
-  <div class="mt-2 flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => dispatch('close')}>
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} on:click={handleSave}>
-      Save
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
 </DialogTemplate>

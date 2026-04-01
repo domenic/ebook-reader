@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
     animationFrameScheduler,
+    BehaviorSubject,
     combineLatest,
     debounceTime,
     filter,
@@ -21,7 +22,6 @@
   import { ViewMode } from '$lib/data/view-mode';
   import { iffBrowser } from '$lib/functions/rxjs/iff-browser';
   import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
-  import { writableSubject } from '$lib/functions/svelte/store';
   import { convertRemToPixels } from '$lib/functions/utils';
   import { logger } from '$lib/data/logger';
   import { imageLoadingState } from './image-loading-state';
@@ -31,99 +31,111 @@
   import { enableReaderWakeLock$, enableTapEdgeToFlip$ } from '$lib/data/store';
   import { onDestroy } from 'svelte';
 
-  export let htmlContent: string;
+  interface Props {
+    htmlContent: string;
+    width: number;
+    height: number;
+    verticalMode: boolean;
+    fontFeatureSettings: string;
+    verticalTextOrientation: string;
+    prioritizeReaderStyles: boolean;
+    enableTextJustification: boolean;
+    enableTextWrapPretty: boolean;
+    textIndentation: number;
+    textMarginValue: number;
+    fontColor: string;
+    backgroundColor: string;
+    hintFuriganaFontColor: string;
+    hintFuriganaShadowColor: string;
+    fontFamilyGroupOne: string;
+    fontFamilyGroupTwo: string;
+    fontSize: number;
+    lineHeight: number;
+    hideSpoilerImage: boolean;
+    hideFurigana: boolean;
+    furiganaStyle: FuriganaStyle;
+    secondDimensionMaxValue: number;
+    firstDimensionMargin: number;
+    autoPositionOnResize: boolean;
+    avoidPageBreak: boolean;
+    pageColumns: number;
+    autoBookmark: boolean;
+    autoBookmarkTime: number;
+    viewMode: ViewMode;
+    exploredCharCount: number;
+    multiplier: number;
+    bookmarkData: Promise<BooksDbBookmarkData | undefined>;
+    customReadingPoint: number;
+    customReadingPointTop: number;
+    customReadingPointLeft: number;
+    customReadingPointScrollOffset: number;
+    customReadingPointRange: Range | undefined;
+    showCustomReadingPoint: boolean;
+    onpagemanagerchange?: (pm: PageManager | undefined) => void;
+    onbookmarkmanagerchange?: (bm: BookmarkManager | undefined) => void;
+    onautoscrollerchange?: (as: AutoScroller | undefined) => void;
+    onbookcharcountchange?: (count: number) => void;
+    onisbookmarkscreenchange?: (value: boolean) => void;
+    onbookmark?: () => void;
+    ontrackerPause?: () => void;
+  }
 
-  export let width: number;
+  let {
+    htmlContent,
+    width,
+    height,
+    verticalMode,
+    fontFeatureSettings,
+    verticalTextOrientation,
+    prioritizeReaderStyles,
+    enableTextJustification,
+    enableTextWrapPretty,
+    textIndentation,
+    textMarginValue,
+    fontColor,
+    backgroundColor,
+    hintFuriganaFontColor,
+    hintFuriganaShadowColor,
+    fontFamilyGroupOne,
+    fontFamilyGroupTwo,
+    fontSize,
+    lineHeight,
+    hideSpoilerImage,
+    hideFurigana,
+    furiganaStyle,
+    secondDimensionMaxValue,
+    firstDimensionMargin,
+    autoPositionOnResize,
+    avoidPageBreak,
+    pageColumns,
+    autoBookmark,
+    autoBookmarkTime,
+    viewMode,
+    exploredCharCount = $bindable(),
+    multiplier,
+    bookmarkData,
+    customReadingPoint,
+    customReadingPointTop = $bindable(),
+    customReadingPointLeft = $bindable(),
+    customReadingPointScrollOffset = $bindable(),
+    customReadingPointRange = $bindable(),
+    showCustomReadingPoint = $bindable(),
+    onpagemanagerchange,
+    onbookmarkmanagerchange,
+    onautoscrollerchange,
+    onbookcharcountchange,
+    onisbookmarkscreenchange,
+    onbookmark,
+    ontrackerPause
+  }: Props = $props();
 
-  export let height: number;
-
-  export let verticalMode: boolean;
-
-  export let fontFeatureSettings: string;
-
-  export let verticalTextOrientation: string;
-
-  export let prioritizeReaderStyles: boolean;
-
-  export let enableTextJustification: boolean;
-
-  export let enableTextWrapPretty: boolean;
-
-  export let textIndentation: number;
-
-  export let textMarginValue: number;
-
-  export let fontColor: string;
-
-  export let backgroundColor: string;
-
-  export let hintFuriganaFontColor: string;
-
-  export let hintFuriganaShadowColor: string;
-
-  export let fontFamilyGroupOne: string;
-
-  export let fontFamilyGroupTwo: string;
-
-  export let fontSize: number;
-
-  export let lineHeight: number;
-
-  export let hideSpoilerImage: boolean;
-
-  export let hideFurigana: boolean;
-
-  export let furiganaStyle: FuriganaStyle;
-
-  export let secondDimensionMaxValue: number;
-
-  export let firstDimensionMargin: number;
-
-  export let autoPositionOnResize: boolean;
-
-  export let avoidPageBreak: boolean;
-
-  export let pageColumns: number;
-
-  export let autoBookmark: boolean;
-
-  export let autoBookmarkTime: number;
-
-  export let viewMode: ViewMode;
-
-  export let exploredCharCount: number;
-
-  export let bookCharCount: number;
-
-  export let multiplier: number;
-
-  export let bookmarkData: Promise<BooksDbBookmarkData | undefined>;
-
-  export let autoScroller: AutoScroller | undefined;
-
-  export let bookmarkManager: BookmarkManager | undefined;
-
-  export let pageManager: PageManager | undefined;
-
-  export let isBookmarkScreen: boolean;
-
-  export let customReadingPoint: number;
-
-  export let customReadingPointTop: number;
-
-  export let customReadingPointLeft: number;
-
-  export let customReadingPointScrollOffset: number;
-
-  export let customReadingPointRange: Range | undefined;
-
-  export let showCustomReadingPoint: boolean;
-
-  let showBlurMessage = false;
+  let showBlurMessage = $state(false);
 
   let wakeLock: WakeLockSentinel | undefined;
 
-  let visibilityState: DocumentVisibilityState;
+  let visibilityState: DocumentVisibilityState = $state('hidden');
+
+  let containerEl: HTMLElement | undefined = $state();
 
   const mutationObserver: MutationObserver = new MutationObserver(handleMutation);
 
@@ -131,16 +143,23 @@
 
   const height$ = new Subject<number>();
 
-  const containerEl$ = writableSubject<HTMLElement | null>(null);
+  const containerEl$ = new BehaviorSubject<HTMLElement | null>(null);
 
-  $: heightModifer =
+  $effect(() => {
+    containerEl$.next(containerEl ?? null);
+  });
+
+  let heightModifer = $derived(
     firstDimensionMargin && ViewMode.Paginated === viewMode && !verticalMode
       ? firstDimensionMargin * 2
-      : 0;
+      : 0
+  );
 
-  $: if ($enableReaderWakeLock$ && visibilityState === 'visible') {
-    setTimeout(requestWakeLock, 500);
-  }
+  $effect(() => {
+    if ($enableReaderWakeLock$ && visibilityState === 'visible') {
+      setTimeout(requestWakeLock, 500);
+    }
+  });
 
   onDestroy(() => {
     mutationObserver.disconnect();
@@ -206,9 +225,13 @@
     reduceToEmptyString()
   );
 
-  $: width$.next(width);
+  $effect(() => {
+    width$.next(width);
+  });
 
-  $: height$.next(height);
+  $effect(() => {
+    height$.next(height);
+  });
 
   function getAdjustedWidth(widthValue: number) {
     if (ViewMode.Paginated === viewMode && !verticalMode && secondDimensionMaxValue) {
@@ -275,7 +298,7 @@
     The reader is currently blurred due to an external application (e. g. exstatic)
   </div>
 {/if}
-<div bind:this={$containerEl$} class="{pxReader} py-8">
+<div bind:this={containerEl} class="{pxReader} py-8">
   {#if viewMode === ViewMode.Continuous}
     <BookReaderContinuous
       {htmlContent}
@@ -307,19 +330,19 @@
       {autoBookmarkTime}
       {multiplier}
       loadingState={$imageLoadingState$ ?? true}
+      {bookmarkData}
+      {customReadingPoint}
       bind:exploredCharCount
-      bind:bookCharCount
-      bind:bookmarkData
-      bind:autoScroller
-      bind:bookmarkManager
-      bind:pageManager
-      bind:customReadingPoint
       bind:customReadingPointTop
       bind:customReadingPointLeft
       bind:customReadingPointScrollOffset
-      on:contentChange={(ev) => contentEl$.next(ev.detail)}
-      on:bookmark
-      on:trackerPause
+      {onpagemanagerchange}
+      {onbookmarkmanagerchange}
+      {onautoscrollerchange}
+      {onbookcharcountchange}
+      oncontentchange={(el) => contentEl$.next(el)}
+      {onbookmark}
+      {ontrackerPause}
     />
   {:else}
     <BookReaderPaginated
@@ -351,17 +374,17 @@
       {autoBookmark}
       {autoBookmarkTime}
       {firstDimensionMargin}
+      {bookmarkData}
       bind:exploredCharCount
-      bind:bookCharCount
-      bind:isBookmarkScreen
-      bind:bookmarkData
-      bind:bookmarkManager
-      bind:pageManager
       bind:customReadingPointRange
       bind:showCustomReadingPoint
-      on:contentChange={(ev) => contentEl$.next(ev.detail)}
-      on:bookmark
-      on:trackerPause
+      {onpagemanagerchange}
+      {onbookmarkmanagerchange}
+      {onbookcharcountchange}
+      {onisbookmarkscreenchange}
+      oncontentchange={(el) => contentEl$.next(el)}
+      {onbookmark}
+      {ontrackerPause}
     />
   {/if}
 </div>

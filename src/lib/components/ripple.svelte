@@ -1,18 +1,16 @@
+<!-- TODO: convert to a Svelte action (https://github.com/domenic/ebook-reader/issues/17) -->
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
 
-  let diameter = 0;
-  let rippleLeft = 0;
-  let rippleTop = 0;
-  let ripples: {
-    id: number;
-  }[] = [];
-  let hold = false;
-  let focus = false;
+  let diameter = $state(0);
+  let rippleLeft = $state(0);
+  let rippleTop = $state(0);
+  let ripples: { id: number }[] = $state([]);
+  let hold = $state(false);
+  let focus = $state(false);
 
-  let containerEl: HTMLElement | undefined;
+  let containerEl: HTMLElement | undefined = $state();
 
   let listeners: {
     el: HTMLElement;
@@ -20,33 +18,36 @@
     listener: (event: any) => void;
   }[] = [];
 
-  $: target = containerEl?.parentElement;
+  let target = $derived(containerEl?.parentElement);
 
-  $: {
+  $effect(() => {
     if (target) {
       target.classList.add('relative', 'overflow-hidden');
-      clearEventListeners();
       const el = target;
-      addEventListener(el, 'focusin', () => (focus = true));
-      addEventListener(el, 'focusout', () => (focus = false));
-      addEventListener(el, 'mouseenter', () => (focus = true));
-      addEventListener(el, 'mouseleave', () => {
-        hold = false;
-        focus = false;
-      });
-      addEventListener(el, 'mousedown', (ev) => createRippleFromMouseEvent(ev, el));
-      addEventListener(el, 'mouseup', () => (hold = false));
-      addEventListener(el, 'touchstart', (ev) => createRippleFromTouchEvent(ev, el));
-      addEventListener(el, 'touchend', () => (hold = false));
-      addEventListener(el, 'touchcancel', () => (hold = false));
-    }
-  }
+      addListener(el, 'focusin', () => queueMicrotask(() => (focus = true)));
+      addListener(el, 'focusout', () => queueMicrotask(() => (focus = false)));
+      addListener(el, 'mouseenter', () => queueMicrotask(() => (focus = true)));
+      addListener(el, 'mouseleave', () =>
+        queueMicrotask(() => {
+          hold = false;
+          focus = false;
+        })
+      );
+      addListener(el, 'mousedown', (ev) =>
+        queueMicrotask(() => createRippleFromMouseEvent(ev, el))
+      );
+      addListener(el, 'mouseup', () => queueMicrotask(() => (hold = false)));
+      addListener(el, 'touchstart', (ev) =>
+        queueMicrotask(() => createRippleFromTouchEvent(ev, el))
+      );
+      addListener(el, 'touchend', () => queueMicrotask(() => (hold = false)));
+      addListener(el, 'touchcancel', () => queueMicrotask(() => (hold = false)));
 
-  onDestroy(() => {
-    clearEventListeners();
+      return () => clearEventListeners();
+    }
   });
 
-  function addEventListener<K extends keyof HTMLElementEventMap>(
+  function addListener<K extends keyof HTMLElementEventMap>(
     el: HTMLElement,
     type: K,
     listener: (event: HTMLElementEventMap[K]) => void
@@ -114,19 +115,19 @@
       style:top="{rippleTop}px"
       style:left="{rippleLeft}px"
       in:animateRipple|local
-      on:introend={() => (ripples = [])}
-    />
+      onintroend={() => queueMicrotask(() => (ripples = []))}
+    ></span>
   {/each}
   {#if hold}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/25"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
   {#if hold || focus}
     <span
       class="absolute inset-0 h-full w-full bg-gray-400/[.10]"
       transition:fade|local={{ easing: quintOut }}
-    />
+    ></span>
   {/if}
 </span>

@@ -1,6 +1,7 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { browser } from '$app/environment';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import DomainHint from '$lib/components/domain-hint.svelte';
   import { basePath, clearConsoleOnReload } from '$lib/data/env';
   import { dialogManager, type Dialog } from '$lib/data/dialog-manager';
@@ -8,17 +9,25 @@
   import { fontFamilyGroupOne$, isOnline$, userFonts$ } from '$lib/data/store';
   import { dummyFn, isMobile, isMobile$ } from '$lib/functions/utils';
   import { MetaTags } from 'svelte-meta-tags';
-  import '../app.scss';
+  import '../app.css';
 
-  let path = '';
-  let dialogs: Dialog[] = [];
-  let clickOnCloseDisabled = false;
-  let zIndex = '';
-
-  $: if (browser) {
-    isMobile$.next(isMobile(window));
-    addUserFonts($userFonts$);
+  interface Props {
+    children?: Snippet;
   }
+
+  let { children }: Props = $props();
+
+  let path = $state('');
+  let dialogs: Dialog[] = $state([]);
+  let clickOnCloseDisabled = $state(false);
+  let zIndex = $state('');
+
+  $effect(() => {
+    if (browser) {
+      isMobile$.next(isMobile(window));
+      addUserFonts($userFonts$);
+    }
+  });
 
   if (clearConsoleOnReload && import.meta.hot) {
     // eslint-disable-next-line no-console
@@ -81,7 +90,9 @@
     dialogs = d;
   });
 
-  page.subscribe((p) => (path = p.url.pathname));
+  $effect(() => {
+    path = page.url.pathname;
+  });
 </script>
 
 <svelte:window bind:online={$isOnline$} />
@@ -102,7 +113,7 @@
   }}
 />
 
-<slot />
+{@render children?.()}
 
 {#if dialogs.length > 0}
   <div class="writing-horizontal-tb fixed inset-0 z-50 h-full w-full" style:z-index={zIndex}>
@@ -110,13 +121,13 @@
       tabindex="0"
       role="button"
       class="tap-highlight-transparent absolute inset-0 bg-black/[.32]"
-      on:click={() => {
+      onclick={() => {
         if (!clickOnCloseDisabled) {
           closeAllDialogs();
         }
       }}
-      on:keyup={dummyFn}
-    />
+      onkeyup={dummyFn}
+    ></div>
 
     <div
       class="relative top-1/2 left-1/2 inline-block max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
@@ -125,13 +136,13 @@
         {#if typeof dialog.component === 'string'}
           {@html dialog.component}
         {:else}
-          <svelte:component this={dialog.component} {...dialog.props} on:close={closeAllDialogs} />
+          <dialog.component {...dialog.props} onclose={closeAllDialogs} />
         {/if}
       {/each}
     </div>
   </div>
 {/if}
 
-<span style={`font-family: ${$fontFamilyGroupOne$ || 'Noto Serif JP'}`} />
+<span style={`font-family: ${$fontFamilyGroupOne$ || 'Noto Serif JP'}`}></span>
 
 <DomainHint />

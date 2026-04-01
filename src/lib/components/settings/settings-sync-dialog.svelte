@@ -8,36 +8,41 @@
   import type { SyncSelection } from '$lib/data/dialog-manager';
   import { lastSyncedSettingsSource$, lastSyncedSettingsTarget$ } from '$lib/data/store';
   import { dummyFn } from '$lib/functions/utils';
-  import { createEventDispatcher } from 'svelte';
   import Fa from 'svelte-fa';
+  import { untrack } from 'svelte';
 
-  export let settingsSyncHeader = '';
-  export let storageSources: BooksDbStorageSource[] = [];
-  export let resolver: (arg0: SyncSelection[]) => void;
+  interface Props {
+    settingsSyncHeader?: string;
+    storageSources?: BooksDbStorageSource[];
+    resolver: (arg0: SyncSelection[]) => void;
+    onclose?: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let { settingsSyncHeader = '', storageSources = [], resolver, onclose }: Props = $props();
 
   const syncSources: SyncSelection[] = [
     { id: InternalStorageSources.INTERNAL_BROWSER, label: 'Browser DB', type: StorageKey.BROWSER },
     { id: InternalStorageSources.INTERNAL_ZIP, label: 'ZIP File', type: StorageKey.BACKUP },
-    ...storageSources.map((storageSource) => ({
+    ...untrack(() => storageSources).map((storageSource) => ({
       id: storageSource.name,
       label: `${storageSource.name} (${storageSource.type})`,
       type: storageSource.type
     }))
   ];
 
-  let selectedSource =
-    syncSources.find((entry) => entry.id === $lastSyncedSettingsSource$)?.id || syncSources[0].id;
-  let selectedTarget =
-    syncSources.find((entry) => entry.id === $lastSyncedSettingsTarget$)?.id || syncSources[1].id;
-
-  $: sources = syncSources.filter(
-    (entry) => entry.id !== selectedTarget && entry.id !== InternalStorageSources.INTERNAL_ZIP
+  let selectedSource = $state(
+    syncSources.find((entry) => entry.id === $lastSyncedSettingsSource$)?.id || syncSources[0].id
   );
-  $: targets = syncSources.filter((entry) => entry.id !== selectedSource);
+  let selectedTarget = $state(
+    syncSources.find((entry) => entry.id === $lastSyncedSettingsTarget$)?.id || syncSources[1].id
+  );
+
+  let sources = $derived(
+    syncSources.filter(
+      (entry) => entry.id !== selectedTarget && entry.id !== InternalStorageSources.INTERNAL_ZIP
+    )
+  );
+  let targets = $derived(syncSources.filter((entry) => entry.id !== selectedSource));
 
   function closeDialog(wasCanceled = false) {
     if (!wasCanceled) {
@@ -53,13 +58,15 @@
             syncSources.find((entry) => entry.id === selectedTarget)!
           ]
     );
-    dispatch('close');
+    onclose?.();
   }
 </script>
 
 <DialogTemplate>
-  <svelte:fragment slot="header">{settingsSyncHeader}</svelte:fragment>
-  <svelte:fragment slot="content">
+  {#snippet header()}
+    {settingsSyncHeader}
+  {/snippet}
+  {#snippet content()}
     <div class="flex flex-col">
       <div>Source</div>
       <select bind:value={selectedSource}>
@@ -80,7 +87,7 @@
         style:cursor={selectedTarget === InternalStorageSources.INTERNAL_ZIP
           ? 'not-allowed'
           : 'pointer'}
-        on:click={() => {
+        onclick={() => {
           if (selectedTarget === InternalStorageSources.INTERNAL_ZIP) {
             return;
           }
@@ -91,7 +98,7 @@
           selectedSource = oldTarget;
           selectedTarget = oldSource;
         }}
-        on:keyup={dummyFn}
+        onkeyup={dummyFn}
       >
         <Fa icon={faArrowsUpDown} />
       </div>
@@ -104,15 +111,17 @@
         {/each}
       </select>
     </div>
-  </svelte:fragment>
-  <div class="flex grow justify-between" slot="footer">
-    <button class={buttonClasses} on:click={() => closeDialog(true)}>
-      Cancel
-      <Ripple />
-    </button>
-    <button class={buttonClasses} on:click={() => closeDialog()}>
-      Confirm
-      <Ripple />
-    </button>
-  </div>
+  {/snippet}
+  {#snippet footer()}
+    <div class="flex grow justify-between">
+      <button class={buttonClasses} onclick={() => closeDialog(true)}>
+        Cancel
+        <Ripple />
+      </button>
+      <button class={buttonClasses} onclick={() => closeDialog()}>
+        Confirm
+        <Ripple />
+      </button>
+    </div>
+  {/snippet}
 </DialogTemplate>

@@ -4,12 +4,24 @@
   import Popover from '../popover/popover.svelte';
   import SettingsDimensionContent from './settings-dimension-content.svelte';
 
-  export let isFirstDimension = false;
-  export let isVertical = false;
-  export let dimensionValue = 0;
+  interface Props {
+    isFirstDimension?: boolean;
+    isVertical?: boolean;
+    dimensionValue?: number;
+  }
+
+  let {
+    isFirstDimension = false,
+    isVertical = false,
+    dimensionValue = $bindable(0)
+  }: Props = $props();
 </script>
 
 <Popover>
-  <Fa icon={faArrowDown19} slot="icon" class="mx-2" />
-  <SettingsDimensionContent slot="content" {isFirstDimension} {isVertical} bind:dimensionValue />
+  {#snippet icon()}
+    <Fa icon={faArrowDown19} class="mx-2" />
+  {/snippet}
+  {#snippet content()}
+    <SettingsDimensionContent {isFirstDimension} {isVertical} bind:dimensionValue />
+  {/snippet}
 </Popover>

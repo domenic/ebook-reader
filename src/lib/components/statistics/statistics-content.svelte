@@ -63,7 +63,7 @@
   import { pluralize } from '$lib/functions/utils';
   import pLimit from 'p-limit';
   import { tap } from 'rxjs';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -220,9 +220,7 @@
         request.titlesToCheck.add(dataList[index].title);
       }
 
-      handleDeleteRequest(
-        new CustomEvent<StatisticsDeleteRequest>('delete', { detail: request })
-      ).finally(() => {
+      handleDeleteRequest(request).finally(() => {
         tick().then(() => dialogManager.dialogs$.next([{ component: '<div/>' }]));
       });
     }),
@@ -264,32 +262,30 @@
     reduceToEmptyString()
   );
 
-  let isLoading = true;
-  let today = getStartHoursDate($startDayHoursForTracker$);
-  let todayKey = getDateString(today);
-  let statisticsTitleFilters = new Map<string, boolean>();
-  let titlesInStatisticsDateRange = new Set<string>();
-  let statisticsData: BookStatistic[] = [];
-  let statisticsForSelection: BookStatistic[] = [];
-  let aggregratedStatistics: BookStatistic[] = [];
-  let readingGoals: BooksDbReadingGoal[] = [];
+  let isLoading = $state(true);
+  let todayKey = $state(getDateString(getStartHoursDate($startDayHoursForTracker$)));
+  let statisticsTitleFilters = $state(new Map<string, boolean>());
+  let titlesInStatisticsDateRange = $state(new Set<string>());
+  let statisticsData: BookStatistic[] = $state([]);
+  let statisticsForSelection: BookStatistic[] = $state([]);
+  let aggregratedStatistics: BookStatistic[] = $state([]);
+  let readingGoals: BooksDbReadingGoal[] = $state([]);
 
-  $: statisticsDateRangeLabel = getDateRangeLabel(
-    $lastStatisticsStartDate$,
-    $lastStatisticsEndDate$
+  let statisticsDateRangeLabel = $derived(
+    getDateRangeLabel($lastStatisticsStartDate$, $lastStatisticsEndDate$)
   );
 
-  $: if (
-    statisticsData &&
-    $lastPrimaryReadingDataAggregationMode$ &&
-    $lastStatisticsStartDate$ &&
-    $lastStatisticsEndDate$
-  ) {
-    today = getStartHoursDate($startDayHoursForTracker$);
-    todayKey = getDateString(today);
+  $effect(() => {
+    if (
+      $lastPrimaryReadingDataAggregationMode$ &&
+      $lastStatisticsStartDate$ &&
+      $lastStatisticsEndDate$
+    ) {
+      todayKey = getDateString(getStartHoursDate($startDayHoursForTracker$));
 
-    updateStatisticsData();
-  }
+      untrack(() => updateStatisticsData());
+    }
+  });
 
   onMount(init);
 
@@ -324,8 +320,11 @@
   }
 
   async function handleDeleteRequest({
-    detail: { startDate, endDate, titlesToCheck, takeAsIs }
-  }: CustomEvent<StatisticsDeleteRequest>) {
+    startDate,
+    endDate,
+    titlesToCheck,
+    takeAsIs
+  }: StatisticsDeleteRequest) {
     let titlesToDelete = new Set<string>();
 
     $statisticsActionInProgress$ = true;
@@ -472,8 +471,12 @@
   }
 
   async function handleEditRequest({
-    detail: { dateKey, title, newReadingTime, newCharactersRead, resetMinMaxValues }
-  }: CustomEvent<StatisticsEditRequest>) {
+    dateKey,
+    title,
+    newReadingTime,
+    newCharactersRead,
+    resetMinMaxValues
+  }: StatisticsEditRequest) {
     $statisticsActionInProgress$ = true;
 
     const statisticIndex = statisticsData.findIndex(
@@ -562,9 +565,7 @@
     }
   }
 
-  function updateTitleFilter({
-    detail: newStatisticsTitleFilters
-  }: CustomEvent<StatisticsTitleFilterItem[]>) {
+  function updateTitleFilter(newStatisticsTitleFilters: StatisticsTitleFilterItem[]) {
     const newStatisticsTitleFilterData = new Map<string, boolean>();
 
     for (let index = 0, { length } = newStatisticsTitleFilters; index < length; index += 1) {
@@ -806,7 +807,7 @@
 {$exportStatisticsDataHandler$ ?? ''}
 {$deleteStatisticsDataHandler$ ?? ''}
 {$setStatisticsDatesToAllTimeHandler$ ?? ''}
-<svelte:window on:keyup={onKeyUp} />
+<svelte:window onkeyup={onKeyUp} />
 {#if isLoading}
   <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
     <Fa icon={faSpinner} spin />
@@ -817,8 +818,6 @@
       {statisticsData}
       {readingGoals}
       {statisticsTitleFilters}
-      {today}
-      {todayKey}
       bind:heatmapAggregration={$lastReadingDataHeatmapAggregationMode$}
     />
     {#if readingGoals.length}
@@ -827,8 +826,6 @@
           {statisticsData}
           {readingGoals}
           {statisticsTitleFilters}
-          {today}
-          {todayKey}
           heatmapType={HeatmapType.READING_GOALS}
           bind:heatmapAggregration={$lastReadingGoalsHeatmapAggregationMode$}
         />
@@ -839,8 +836,8 @@
     <StatisticsSummary
       {aggregratedStatistics}
       {statisticsDateRangeLabel}
-      on:delete={handleDeleteRequest}
-      on:edit={handleEditRequest}
+      ondelete={handleDeleteRequest}
+      onedit={handleEditRequest}
     />
   {/if}
 {/if}
@@ -853,14 +850,14 @@
     <StatisticsTitleFilter
       {statisticsTitleFilters}
       {titlesInStatisticsDateRange}
-      on:applyFilter={updateTitleFilter}
-      on:clearPrefilter={clearPrefilter}
-      on:close={() => ($statisticsTitleFilterIsOpen$ = false)}
+      onapplyFilter={updateTitleFilter}
+      onclearPrefilter={clearPrefilter}
+      onclose={() => ($statisticsTitleFilterIsOpen$ = false)}
     />
   </div>
 {/if}
 {#if $statisticsActionInProgress$}
-  <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2] z-[70]" />
+  <div class="tap-highlight-transparent fixed inset-0 bg-black/[.2] z-[70]"></div>
   <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
     <Fa icon={faSpinner} spin />
   </div>

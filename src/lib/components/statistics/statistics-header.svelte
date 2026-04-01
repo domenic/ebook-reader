@@ -26,14 +26,18 @@
   import { lastStatisticsTab$ } from '$lib/data/store';
   import Fa from 'svelte-fa';
 
-  export let showStatisticsSettings: boolean;
+  interface Props {
+    showStatisticsSettings: boolean;
+  }
+
+  let { showStatisticsSettings = $bindable() }: Props = $props();
 
   const copyStatisticsDataItems: StatisticsDataSource[] = [
     { key: 'readingTime', label: 'Reading Time' },
     { key: 'charactersRead', label: 'Characters Read' }
   ];
 
-  let copyStatisticsDataPopover: Popover;
+  let copyStatisticsDataPopover: Popover = $state(undefined!);
 </script>
 
 <div class="elevation-4 fixed inset-x-0 top-0 z-10">
@@ -47,7 +51,7 @@
           title={$lastStatisticsTab$ === StatisticsTab.SUMMARY
             ? 'You are already on the Summary Tab'
             : 'Switch to Summary Tab'}
-          on:click={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
+          onclick={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
         />
         <HeaderTab
           icon={faMap}
@@ -56,15 +60,15 @@
           title={$lastStatisticsTab$ === StatisticsTab.OVERVIEW
             ? 'You are already on the Heatmap Tab'
             : 'Switch to Heatmap Tab'}
-          on:click={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
+          onclick={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
         />
-        <div class={headerDividerClasses} />
+        <div class={headerDividerClasses}></div>
         <HeaderIconButton
           icon={faFilter}
           title="Open Title Filter Menu"
           label="Filter"
           disabled={!$statisticsTitleFilterEnabled$}
-          on:click={() => {
+          onclick={() => {
             if ($statisticsTitleFilterEnabled$) {
               $statisticsTitleFilterIsOpen$ = true;
             }
@@ -74,7 +78,7 @@
           icon={faSliders}
           title="Open Statistics Settings"
           label="Statistics Settings"
-          on:click={() => (showStatisticsSettings = true)}
+          onclick={() => (showStatisticsSettings = true)}
         />
       </div>
       <div class="flex">
@@ -85,26 +89,30 @@
             yOffset={0}
             bind:this={copyStatisticsDataPopover}
           >
-            <div title="Copy Data in TMW Log Format" slot="icon" class={labelIconClasses}>
-              <Fa icon={faCopy} class="text-sm xl:text-xs" />
-              <span>Copy&nbsp;▾</span>
-            </div>
-            <div class="flex flex-col justify-center w-36 bg-gray-700" slot="content">
-              {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
-                <button
-                  class="p-2 hover:bg-white hover:text-gray-700"
-                  on:click={() => {
-                    copyStatisticsData$.next(copyStatisticsDataItem.key);
-                    copyStatisticsDataPopover.toggleOpen();
-                  }}
-                >
-                  {copyStatisticsDataItem.label}
-                </button>
-              {/each}
-            </div>
+            {#snippet icon()}
+              <div title="Copy Data in TMW Log Format" class={labelIconClasses}>
+                <Fa icon={faCopy} class="text-sm xl:text-xs" />
+                <span>Copy&nbsp;▾</span>
+              </div>
+            {/snippet}
+            {#snippet content()}
+              <div class="flex flex-col justify-center w-36 bg-gray-700">
+                {#each copyStatisticsDataItems as copyStatisticsDataItem (copyStatisticsDataItem.key)}
+                  <button
+                    class="p-2 hover:bg-white hover:text-gray-700"
+                    onclick={() => {
+                      copyStatisticsData$.next(copyStatisticsDataItem.key);
+                      copyStatisticsDataPopover.toggleOpen();
+                    }}
+                  >
+                    {copyStatisticsDataItem.label}
+                  </button>
+                {/each}
+              </div>
+            {/snippet}
           </Popover>
         </div>
-        <div class={headerDividerClasses} />
+        <div class={headerDividerClasses}></div>
         <HeaderNavTabs />
       </div>
     </div>

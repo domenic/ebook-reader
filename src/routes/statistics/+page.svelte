@@ -27,17 +27,17 @@
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
-  let showStatisticsSettings = false;
+  let showStatisticsSettings = $state(false);
 
-  $: if ($lastStatisticsRangeTemplate$ || $lastStartDayOfWeek$ > -1) {
-    tick().then(() => setSelectedStatisticsDays());
-  }
+  $effect(() => {
+    if ($lastStatisticsRangeTemplate$ || $lastStartDayOfWeek$ > -1) {
+      tick().then(() => setSelectedStatisticsDays());
+    }
+  });
 
   onDestroy(() => ($preFilteredTitlesForStatistics$ = new Set()));
 
-  function handleSelectedStatisticsDateChange({
-    detail: { dateString, isStartDate }
-  }: CustomEvent<StatisticsDateChange>) {
+  function handleSelectedStatisticsDateChange({ dateString, isStartDate }: StatisticsDateChange) {
     const referenceDate = getStartHoursDate($startDayHoursForTracker$);
     const todayKey = getDateKey($startDayHoursForTracker$, referenceDate);
 
@@ -127,7 +127,7 @@
 {#if showStatisticsSettings}
   <div
     class="writing-horizontal-tb fixed top-0 right-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between bg-gray-700 text-white"
-    in:fly|local={{ x: 100, duration: 100, easing: quintInOut }}
+    in:fly={{ x: 100, duration: 100, easing: quintInOut }}
     use:clickOutside={() => {
       if (!$statisticsActionInProgress$) {
         showStatisticsSettings = false;
@@ -135,8 +135,8 @@
     }}
   >
     <StatisticsSettings
-      on:statisticsDateChange={handleSelectedStatisticsDateChange}
-      on:close={() => (showStatisticsSettings = false)}
+      onstatisticsDateChange={handleSelectedStatisticsDateChange}
+      onclose={() => (showStatisticsSettings = false)}
     />
   </div>
 {/if}
