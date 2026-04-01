@@ -1,3 +1,4 @@
+<!-- TODO: convert to a Svelte action (https://github.com/domenic/ebook-reader/issues/17) -->
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fade } from 'svelte/transition';
@@ -23,18 +24,24 @@
     if (target) {
       target.classList.add('relative', 'overflow-hidden');
       const el = target;
-      addListener(el, 'focusin', () => (focus = true));
-      addListener(el, 'focusout', () => (focus = false));
-      addListener(el, 'mouseenter', () => (focus = true));
-      addListener(el, 'mouseleave', () => {
-        hold = false;
-        focus = false;
-      });
-      addListener(el, 'mousedown', (ev) => createRippleFromMouseEvent(ev, el));
-      addListener(el, 'mouseup', () => (hold = false));
-      addListener(el, 'touchstart', (ev) => createRippleFromTouchEvent(ev, el));
-      addListener(el, 'touchend', () => (hold = false));
-      addListener(el, 'touchcancel', () => (hold = false));
+      addListener(el, 'focusin', () => queueMicrotask(() => (focus = true)));
+      addListener(el, 'focusout', () => queueMicrotask(() => (focus = false)));
+      addListener(el, 'mouseenter', () => queueMicrotask(() => (focus = true)));
+      addListener(el, 'mouseleave', () =>
+        queueMicrotask(() => {
+          hold = false;
+          focus = false;
+        })
+      );
+      addListener(el, 'mousedown', (ev) =>
+        queueMicrotask(() => createRippleFromMouseEvent(ev, el))
+      );
+      addListener(el, 'mouseup', () => queueMicrotask(() => (hold = false)));
+      addListener(el, 'touchstart', (ev) =>
+        queueMicrotask(() => createRippleFromTouchEvent(ev, el))
+      );
+      addListener(el, 'touchend', () => queueMicrotask(() => (hold = false)));
+      addListener(el, 'touchcancel', () => queueMicrotask(() => (hold = false)));
 
       return () => clearEventListeners();
     }
@@ -108,7 +115,7 @@
       style:top="{rippleTop}px"
       style:left="{rippleLeft}px"
       in:animateRipple|local
-      onintroend={() => (ripples = [])}
+      onintroend={() => queueMicrotask(() => (ripples = []))}
     ></span>
   {/each}
   {#if hold}
