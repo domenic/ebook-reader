@@ -1675,14 +1675,14 @@
       {blockDataUpdates}
       bind:wasTrackerPaused
       bind:this={trackerElm}
-      on:freezeCurrentLocation={freezeTrackerPosition}
-      on:statisticsSaved={() => {
+      onfreezecurrentlocation={freezeTrackerPosition}
+      onstatisticssaved={() => {
         if (!blockDataUpdates) {
           scheduleReplication(StorageDataType.STATISTICS);
         }
       }}
-      on:trackerAvailable={() => (showTrackerIcon = true)}
-      on:trackerMenuClosed={() => {
+      ontrackeravailable={() => (showTrackerIcon = true)}
+      ontrackermenuclosed={() => {
         if (!wasTrackerPaused) {
           isTrackerPaused$.next(false);
         }
