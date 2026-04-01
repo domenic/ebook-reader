@@ -820,8 +820,6 @@
       {statisticsData}
       {readingGoals}
       {statisticsTitleFilters}
-      {today}
-      {todayKey}
       bind:heatmapAggregration={$lastReadingDataHeatmapAggregationMode$}
     />
     {#if readingGoals.length}
@@ -830,8 +828,6 @@
           {statisticsData}
           {readingGoals}
           {statisticsTitleFilters}
-          {today}
-          {todayKey}
           heatmapType={HeatmapType.READING_GOALS}
           bind:heatmapAggregration={$lastReadingGoalsHeatmapAggregationMode$}
         />

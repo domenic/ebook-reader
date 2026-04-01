@@ -36,13 +36,15 @@
   import {
     lastStartDayOfWeek$,
     lastStatisticsEndDate$,
-    lastStatisticsStartDate$
+    lastStatisticsStartDate$,
+    startDayHoursForTracker$
   } from '$lib/data/store';
   import { reduceToEmptyString } from '$lib/functions/rxjs/reduce-to-empty-string';
   import {
     advanceDateDays,
     getDate,
     getDateString,
+    getStartHoursDate,
     getDaysBetween,
     getPreviousDayKey,
     secondsToMinutes
@@ -58,8 +60,6 @@
     statisticsData: BooksDbStatistic[];
     readingGoals: BooksDbReadingGoal[];
     statisticsTitleFilters: Map<string, boolean>;
-    today: Date;
-    todayKey: string;
   }
 
   let {
@@ -67,10 +67,11 @@
     heatmapAggregration = $bindable(),
     statisticsData,
     readingGoals,
-    statisticsTitleFilters,
-    today,
-    todayKey
+    statisticsTitleFilters
   }: Props = $props();
+
+  const today = getStartHoursDate($startDayHoursForTracker$);
+  const todayKey = getDateString(today);
 
   const resizeHandler$ = fromEvent(window, 'resize').pipe(
     debounceTime(250),
@@ -84,7 +85,7 @@
   let heatmapDetailDataPopover: Popover = $state()!;
   let monthLabels: HeatmapMonthLabel[] = $state([...monthLabelList]);
   let dayElementSize = $state(heatmapDayElementSize);
-  let heatmapYear = $state(untrack(() => today).getFullYear());
+  let heatmapYear = $state(today.getFullYear());
   let globalHeatmapData: StatisticsHeatmapData | ReadingGoalsHeatmapData = $state()!;
   const globalHeatmapDayData = new Map<
     string,
