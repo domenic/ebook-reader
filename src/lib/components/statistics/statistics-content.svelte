@@ -63,7 +63,7 @@
   import { pluralize } from '$lib/functions/utils';
   import pLimit from 'p-limit';
   import { tap } from 'rxjs';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount, tick, untrack } from 'svelte';
   import Fa from 'svelte-fa';
   import { quintInOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -262,32 +262,33 @@
     reduceToEmptyString()
   );
 
-  let isLoading = true;
-  let today = getStartHoursDate($startDayHoursForTracker$);
-  let todayKey = getDateString(today);
-  let statisticsTitleFilters = new Map<string, boolean>();
-  let titlesInStatisticsDateRange = new Set<string>();
-  let statisticsData: BookStatistic[] = [];
-  let statisticsForSelection: BookStatistic[] = [];
-  let aggregratedStatistics: BookStatistic[] = [];
-  let readingGoals: BooksDbReadingGoal[] = [];
+  let isLoading = $state(true);
+  let today = $state(getStartHoursDate($startDayHoursForTracker$));
+  let todayKey = $state(getDateString(today));
+  let statisticsTitleFilters = $state(new Map<string, boolean>());
+  let titlesInStatisticsDateRange = $state(new Set<string>());
+  let statisticsData: BookStatistic[] = $state([]);
+  let statisticsForSelection: BookStatistic[] = $state([]);
+  let aggregratedStatistics: BookStatistic[] = $state([]);
+  let readingGoals: BooksDbReadingGoal[] = $state([]);
 
-  $: statisticsDateRangeLabel = getDateRangeLabel(
-    $lastStatisticsStartDate$,
-    $lastStatisticsEndDate$
+  let statisticsDateRangeLabel = $derived(
+    getDateRangeLabel($lastStatisticsStartDate$, $lastStatisticsEndDate$)
   );
 
-  $: if (
-    statisticsData &&
-    $lastPrimaryReadingDataAggregationMode$ &&
-    $lastStatisticsStartDate$ &&
-    $lastStatisticsEndDate$
-  ) {
-    today = getStartHoursDate($startDayHoursForTracker$);
-    todayKey = getDateString(today);
+  $effect(() => {
+    if (
+      $lastPrimaryReadingDataAggregationMode$ &&
+      $lastStatisticsStartDate$ &&
+      $lastStatisticsEndDate$
+    ) {
+      const newToday = getStartHoursDate($startDayHoursForTracker$);
+      today = newToday;
+      todayKey = getDateString(newToday);
 
-    updateStatisticsData();
-  }
+      untrack(() => updateStatisticsData());
+    }
+  });
 
   onMount(init);
 

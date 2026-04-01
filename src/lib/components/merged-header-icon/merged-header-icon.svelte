@@ -1,7 +1,7 @@
 <script lang="ts">
   import Fa from 'svelte-fa';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
   import Popover from '$lib/components/popover/popover.svelte';
   import { baseIconClasses, labelIconClasses } from '$lib/css-classes';
@@ -20,7 +20,7 @@
     onaction
   }: Props = $props();
 
-  let actionItems = $derived(items.filter((item) => item.routeId !== $page.route.id));
+  let actionItems = $derived(items.filter((item) => item.routeId !== page.route.id));
   let leavePageLink = $derived(
     actionItems.length === 1 && actionItems[0].routeId ? actionItems[0].routeId : ''
   );

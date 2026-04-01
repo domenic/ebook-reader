@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { faBookOpen, faChartLine, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
   import HeaderTab from '$lib/components/header-tab.svelte';
   import { pagePath } from '$lib/data/env';
@@ -38,7 +38,7 @@
   <HeaderTab
     icon={faBookOpen}
     label="Book"
-    active={$page.route.id === '/b'}
+    active={page.route.id === '/b'}
     onclick={() => handleClick('/b', `?id=${$currentBookId$}`)}
   />
 {/if}
@@ -46,7 +46,7 @@
   <HeaderTab
     icon={tab.icon}
     label={tab.label}
-    active={$page.route.id === tab.routeId}
+    active={page.route.id === tab.routeId}
     onclick={() => handleClick(tab.routeId)}
   />
 {/each}

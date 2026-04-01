@@ -751,7 +751,7 @@
   class:ttu-text-wrap-pretty={enableTextWrapPretty}
   class="book-content m-auto"
   use:swipe={() => ({ timeframe: 500, minSwipeDistance: $swipeThreshold$, touchAction: 'pan-y' })}
-  on:swipe={onSwipe}
+  onswipe={onSwipe}
 >
   <div class="book-content-container" id={currentSectionId || null} bind:this={contentEl}>
     {@html displayedHtml}
