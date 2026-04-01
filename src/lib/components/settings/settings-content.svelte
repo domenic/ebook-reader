@@ -54,7 +54,6 @@
   } from '$lib/functions/replication/replication-options';
   import { map } from 'rxjs';
   import Fa from 'svelte-fa';
-  import { untrack } from 'svelte';
 
   interface Props {
     selectedTheme: string;
@@ -493,17 +492,15 @@
 
   $effect(() => {
     if ((activeSettings === 'Data' || activeSettings === 'Statistics') && !$storageSources$) {
-      untrack(() => {
-        database
-          .getStorageSources()
-          .then((storageSources) => {
-            database.storageSourcesChanged$.next(storageSources);
-          })
-          .catch((error) => {
-            logger.error(`Failed to retrieve storage sources: ${error.message}`);
-            database.storageSourcesChanged$.next([]);
-          });
-      });
+      database
+        .getStorageSources()
+        .then((storageSources) => {
+          database.storageSourcesChanged$.next(storageSources);
+        })
+        .catch((error) => {
+          logger.error(`Failed to retrieve storage sources: ${error.message}`);
+          database.storageSourcesChanged$.next([]);
+        });
     }
   });
 </script>

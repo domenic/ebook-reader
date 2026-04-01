@@ -29,7 +29,7 @@
   import type { AutoScroller, BookmarkManager, PageManager } from './types';
   import BookReaderPaginated from './book-reader-paginated/book-reader-paginated.svelte';
   import { enableReaderWakeLock$, enableTapEdgeToFlip$ } from '$lib/data/store';
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy } from 'svelte';
 
   interface Props {
     htmlContent: string;
@@ -157,7 +157,7 @@
 
   $effect(() => {
     if ($enableReaderWakeLock$ && visibilityState === 'visible') {
-      untrack(() => setTimeout(requestWakeLock, 500));
+      setTimeout(requestWakeLock, 500);
     }
   });
 

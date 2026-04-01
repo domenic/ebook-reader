@@ -94,23 +94,23 @@
     share()
   );
 
-  let selectedBookIds: ReadonlySet<number> = new Set();
-  let selectMode = false;
-  let cancelToken = new AbortController();
-  let cancelSignal = cancelToken.signal;
-  let cancelTooltip = '';
-  let replicationProgress = 0;
-  let replicationToProgress = 0;
-  let replicationProgressRemaining = '~ ??:??:??';
+  let selectedBookIds: ReadonlySet<number> = $state(new Set());
+  let selectMode = $state(false);
+  let cancelToken = $state(new AbortController());
+  let cancelSignal = $derived(cancelToken.signal);
+  let cancelTooltip = $state('');
+  let replicationProgress = $state(0);
+  let replicationToProgress = $state(0);
+  let replicationProgressRemaining = $state('~ ??:??:??');
   let replicationDone = new Subject<void>();
   let progressBase = 0;
   let executionStart: number;
 
-  $: {
+  $effect(() => {
     if (!selectMode) {
       selectedBookIds = new Set();
     }
-  }
+  });
 
   onDestroy(() => dialogManager.dialogs$.next([]));
 

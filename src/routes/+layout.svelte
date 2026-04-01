@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { browser } from '$app/environment';
   import { page } from '$app/stores';
   import DomainHint from '$lib/components/domain-hint.svelte';
@@ -10,15 +11,23 @@
   import { MetaTags } from 'svelte-meta-tags';
   import '../app.css';
 
-  let path = '';
-  let dialogs: Dialog[] = [];
-  let clickOnCloseDisabled = false;
-  let zIndex = '';
-
-  $: if (browser) {
-    isMobile$.next(isMobile(window));
-    addUserFonts($userFonts$);
+  interface Props {
+    children?: Snippet;
   }
+
+  let { children }: Props = $props();
+
+  let path = $state('');
+  let dialogs: Dialog[] = $state([]);
+  let clickOnCloseDisabled = $state(false);
+  let zIndex = $state('');
+
+  $effect(() => {
+    if (browser) {
+      isMobile$.next(isMobile(window));
+      addUserFonts($userFonts$);
+    }
+  });
 
   if (clearConsoleOnReload && import.meta.hot) {
     // eslint-disable-next-line no-console
@@ -102,7 +111,7 @@
   }}
 />
 
-<slot></slot>
+{@render children?.()}
 
 {#if dialogs.length > 0}
   <div class="writing-horizontal-tb fixed inset-0 z-50 h-full w-full" style:z-index={zIndex}>
@@ -125,7 +134,7 @@
         {#if typeof dialog.component === 'string'}
           {@html dialog.component}
         {:else}
-          <svelte:component this={dialog.component} {...dialog.props} onclose={closeAllDialogs} />
+          <dialog.component {...dialog.props} onclose={closeAllDialogs} />
         {/if}
       {/each}
     </div>
