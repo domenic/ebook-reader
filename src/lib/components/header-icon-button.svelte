@@ -1,19 +1,30 @@
 <script lang="ts">
   import type { MouseEventHandler } from 'svelte/elements';
   import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+  import HeaderLabeledContent from '$lib/components/header-labeled-content.svelte';
   import { labelIconClasses } from '$lib/css-classes';
+  import type { Snippet } from 'svelte';
   import { dummyFn } from '$lib/functions/utils';
-  import Fa from 'svelte-fa';
 
   interface Props {
-    icon: IconDefinition;
+    icon?: IconDefinition;
     title: string;
     label?: string;
     disabled?: boolean;
     onclick?: MouseEventHandler<HTMLDivElement>;
+    iconContent?: Snippet;
+    labelContent?: Snippet;
   }
 
-  let { icon, title, label, disabled = false, onclick }: Props = $props();
+  let {
+    icon,
+    title,
+    label,
+    disabled = false,
+    onclick,
+    iconContent,
+    labelContent
+  }: Props = $props();
 </script>
 
 <div
@@ -25,6 +36,5 @@
   {onclick}
   onkeyup={dummyFn}
 >
-  <Fa {icon} class="text-sm xl:text-xs" />
-  {#if label}<span>{label}</span>{/if}
+  <HeaderLabeledContent {icon} {label} {iconContent} {labelContent} />
 </div>

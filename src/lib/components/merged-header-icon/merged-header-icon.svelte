@@ -2,6 +2,7 @@
   import Fa from 'svelte-fa';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import HeaderLabeledContent from '$lib/components/header-labeled-content.svelte';
   import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
   import Popover from '$lib/components/popover/popover.svelte';
   import { baseIconClasses, labelIconClasses } from '$lib/css-classes';
@@ -47,8 +48,10 @@
 {#if leavePageLink}
   <a href={leavePageLink}>
     <div class={labelIconClasses}>
-      <Fa icon={mergeTo.icon} class="text-sm xl:text-xs" />
-      <span>{mergeTo.label}{mergeTo.routeId ? ' ↗' : ''}</span>
+      <HeaderLabeledContent
+        icon={mergeTo.icon}
+        label={`${mergeTo.label}${mergeTo.routeId ? ' ↗' : ''}`}
+      />
     </div>
   </a>
 {:else}
@@ -62,8 +65,10 @@
         onclick={() => handleActionMenuItem(actionItem.label)}
         onkeyup={dummyFn}
       >
-        <Fa icon={actionItem.icon} class="text-sm xl:text-xs" />
-        <span>{actionItem.label}{actionItem.routeId ? ' ↗' : ''}</span>
+        <HeaderLabeledContent
+          icon={actionItem.icon}
+          label={`${actionItem.label}${actionItem.routeId ? ' ↗' : ''}`}
+        />
       </div>
     {/each}
   </div>

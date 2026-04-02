@@ -54,7 +54,7 @@
             tabindex="0"
             role="button"
             title="Book selected"
-            class="absolute inset-0 bg-gray-700 bg-opacity-20"
+            class="absolute inset-0 bg-gray-700/20"
             onclick={() => onBookCardClick(bookCard.id)}
             onkeyup={dummyFn}
           >

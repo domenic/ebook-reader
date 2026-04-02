@@ -1156,6 +1156,7 @@
         class="flex h-full items-end text-xs leading-none md:text-sm"
         style:grid-row={'1/2'}
         style:grid-column={`${label.heatmapColumn}`}
+        style:padding-bottom={'3px'}
       >
         {label.monthLabel}
       </div>
@@ -1189,6 +1190,7 @@
         class:cursor-pointer={heatmapDay.isCurrentYear}
         class:bg-slate-300={heatmapDay.isCurrentYear}
         class:bg-slate-200={!heatmapDay.isCurrentYear}
+        class:border-gray-200={!isSelected && !isToday}
         class:border-amber-500={isSelected}
         class:border-red-500={isToday}
         class:highlight={selectedStreakDates.has(heatmapDay.dateString)}

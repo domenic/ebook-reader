@@ -274,7 +274,7 @@
 </script>
 
 {#if showSpinner}
-  <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]"></div>
+  <div class="tap-highlight-transparent absolute inset-0 bg-black/20"></div>
   <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">
     <Fa icon={faSpinner} spin />
   </div>
@@ -338,7 +338,7 @@
       </div>
     {/if}
     {#if readingGoalToReplaceMessage}
-      <details class="cursor-pointer max-h-[6rem] sm:max-h-[10rem] overflow-auto mt-4">
+      <details class="cursor-pointer max-h-24 sm:max-h-40 overflow-auto mt-4">
         <summary>{readingGoalToReplaceMessage}</summary>
         {#each readingGoalsToReplace as goalToReplace (goalToReplace.goalStartDate)}
           <div class="my-2 p-1">

@@ -746,14 +746,14 @@
 
 {#if firstDimensionMargin}
   <div
-    class="fixed z-[5]"
+    class="fixed z-5"
     class:inset-y-0={verticalMode}
     class:inset-x-0={!verticalMode}
     style:background-color={backgroundColor}
     style="{fullLengthDimension}: 100%; {modifyingDimension}: {firstDimensionMargin}px; {boundSide[0]}: 0"
   ></div>
   <div
-    class="fixed z-[5]"
+    class="fixed z-5"
     class:inset-y-0={verticalMode}
     class:inset-x-0={!verticalMode}
     style:background-color={backgroundColor}

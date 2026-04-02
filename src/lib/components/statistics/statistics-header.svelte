@@ -6,6 +6,7 @@
     faMap,
     faSliders
   } from '@fortawesome/free-solid-svg-icons';
+  import HeaderLabeledContent from '$lib/components/header-labeled-content.svelte';
   import HeaderIconButton from '$lib/components/header-icon-button.svelte';
   import HeaderNavTabs from '$lib/components/header-nav-tabs.svelte';
   import HeaderTab from '$lib/components/header-tab.svelte';
@@ -91,8 +92,7 @@
           >
             {#snippet icon()}
               <div title="Copy Data in TMW Log Format" class={labelIconClasses}>
-                <Fa icon={faCopy} class="text-sm xl:text-xs" />
-                <span>Copy&nbsp;▾</span>
+                <HeaderLabeledContent icon={faCopy} label="Copy ▾" />
               </div>
             {/snippet}
             {#snippet content()}

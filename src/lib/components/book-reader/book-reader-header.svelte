@@ -12,6 +12,7 @@
   } from '@fortawesome/free-solid-svg-icons';
   import { readerImageGalleryPictures$ } from '$lib/components/book-reader/book-reader-image-gallery/book-reader-image-gallery';
   import HeaderIconButton from '$lib/components/header-icon-button.svelte';
+  import HeaderLabeledContent from '$lib/components/header-labeled-content.svelte';
   import HeaderNavTabs from '$lib/components/header-nav-tabs.svelte';
   import Popover from '$lib/components/popover/popover.svelte';
   import {
@@ -161,8 +162,7 @@
         >
           {#snippet icon()}
             <div title="Open Custom Point Actions" class={labelIconClasses}>
-              <Fa icon={faCrosshairs} class="text-sm xl:text-xs" />
-              <span>Point&nbsp;▾</span>
+              <HeaderLabeledContent icon={faCrosshairs} label="Point ▾" />
             </div>
           {/snippet}
           {#snippet content()}

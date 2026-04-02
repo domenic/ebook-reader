@@ -96,7 +96,7 @@
   }
 </script>
 
-<div class="flex flex-col min-w-[15rem] md:min-w-[20rem]">
+<div class="flex flex-col min-w-60 md:min-w-[20rem]">
   <span>Font Name</span>
   <input
     class="mt-2"

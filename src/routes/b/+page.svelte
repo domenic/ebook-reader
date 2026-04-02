@@ -1774,7 +1774,7 @@
 
 {#if $tocIsOpen$ && $sectionData$}
   <div
-    class="writing-horizontal-tb fixed top-0 left-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between"
+    class="writing-horizontal-tb fixed top-0 left-0 z-60 flex h-full w-full max-w-xl flex-col justify-between"
     style:color={$themeOption$?.fontColor}
     style:background-color={$backgroundColor$}
     in:fly={{ x: -100, duration: 100, easing: quintInOut }}
@@ -1804,11 +1804,11 @@
 
 {#if (isSelectingCustomReadingPoint && !$isMobile$) || (!isPaginated && showCustomReadingPoint)}
   <div
-    class="fixed left-0 z-20 h-[1px] w-full border border-red-500"
+    class="fixed left-0 z-20 h-px w-full border border-red-500"
     style:top={`${customReadingPointTop}px`}
   ></div>
   <div
-    class="fixed top-0 z-20 h-full w-[1px] border border-red-500"
+    class="fixed top-0 z-20 h-full w-px border border-red-500"
     style:left={`${customReadingPointLeft}px`}
   ></div>
 {/if}
