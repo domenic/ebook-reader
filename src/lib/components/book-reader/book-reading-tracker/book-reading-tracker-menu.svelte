@@ -275,7 +275,7 @@
           <!-- eslint-enable svelte/no-unknown-style-directive-property -->
         </div>
       {/if}
-      <div class="grid grid-cols-[max-content,auto] gap-x-4 gap-y-2 mt-4">
+      <div class="grid grid-cols-[max-content_auto] gap-x-4 gap-y-2 mt-4">
         <div>Current Reading Goal:</div>
         <div class="flex flex-col sm:block">
           <span>{currentReadingGoalStart}</span>
@@ -315,7 +315,7 @@
         {/if}
       </div>
       <hr />
-      <div class="grid grid-cols-[max-content,auto] gap-x-4 gap-y-2">
+      <div class="grid grid-cols-[max-content_auto] gap-x-4 gap-y-2">
         {#if statistic.id === 'All Time'}
           <div class="mt-3">Book started on:</div>
           <div class="mt-3">{bookStartDate}</div>
@@ -464,7 +464,7 @@
     </div>
   {/each}
   {#if actionInProgress}
-    <div class="tap-highlight-transparent absolute inset-0 bg-black/[.2]"></div>
+    <div class="tap-highlight-transparent absolute inset-0 bg-black/20"></div>
     <div class="absolute inset-0 flex h-full w-full items-center justify-center text-7xl">
       <Fa icon={faSpinner} spin />
     </div>

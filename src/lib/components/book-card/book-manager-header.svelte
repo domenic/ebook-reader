@@ -1,6 +1,8 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import type { BookCardProps } from '$lib/components/book-card/book-card-props';
+  import HeaderIconButton from '$lib/components/header-icon-button.svelte';
+  import HeaderLabeledContent from '$lib/components/header-labeled-content.svelte';
   import HeaderNavTabs from '$lib/components/header-nav-tabs.svelte';
   import { mergeEntries } from '$lib/components/merged-header-icon/merged-entries';
   import MergedHeaderIcon from '$lib/components/merged-header-icon/merged-header-icon.svelte';
@@ -9,6 +11,7 @@
     baseHeaderClasses,
     headerDividerClasses,
     labelIconClasses,
+    labeledHeaderIconClasses,
     pxScreen
   } from '$lib/css-classes';
   import { SortDirection } from '$lib/data/sort-types';
@@ -213,6 +216,37 @@
   }
 </script>
 
+{#snippet allIcon()}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    class="h-3.5 w-3.5 xl:h-3 xl:w-3 {labeledHeaderIconClasses}"
+  >
+    <path
+      class="fill-current"
+      d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"
+    />
+  </svg>
+{/snippet}
+
+{#snippet storageSourceIcon()}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox={$storageIcon$.viewBox}
+    class="h-3.5 w-3.5 xl:h-3 xl:w-3 {labeledHeaderIconClasses}"
+  >
+    <path class="fill-current" d={$storageIcon$.d} />
+  </svg>
+{/snippet}
+
+{#snippet sortAscIcon()}
+  <Fa icon={faArrowDownShortWide} class={labeledHeaderIconClasses} />
+{/snippet}
+
+{#snippet sortDescIcon()}
+  <Fa icon={faArrowDownWideShort} class={labeledHeaderIconClasses} />
+{/snippet}
+
 <input
   hidden
   multiple
@@ -260,7 +294,7 @@
           <svg
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5 xl:h-3 xl:w-3"
+            class="h-3.5 w-3.5 xl:h-3 xl:w-3 {labeledHeaderIconClasses}"
           >
             <path
               class="fill-current"
@@ -289,18 +323,13 @@
               onaction={triggerInput}
             />
           </div>
-          <div
-            tabindex="0"
-            role="button"
-            title="Report an Issue"
-            class={labelIconClasses}
-            in:scale={inAnimationParams}
-            out:scale={outAnimationParams}
-            onclick={() => onbugReportClick?.()}
-            onkeyup={dummyFn}
-          >
-            <Fa icon={faBug} class="text-sm xl:text-xs" />
-            <span>Issue Report</span>
+          <div in:scale={inAnimationParams} out:scale={outAnimationParams}>
+            <HeaderIconButton
+              icon={faBug}
+              title="Report an Issue"
+              label="Issue Report"
+              onclick={() => onbugReportClick?.()}
+            />
           </div>
         {:else}
           <div
@@ -313,59 +342,38 @@
             onclick={() => onselectAllClick?.()}
             onkeyup={dummyFn}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              class="h-3.5 w-3.5 xl:h-3 xl:w-3"
-            >
-              <path
-                class="fill-current"
-                d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"
-              />
-            </svg>
-            <span>All</span>
+            <HeaderLabeledContent label="All" iconContent={allIcon} />
           </div>
           {#if selectedCount > 0}
-            <div
-              tabindex="0"
-              role="button"
-              title="Open Export Menu"
-              class="transform-gpu {labelIconClasses}"
-              in:scale={inAnimationParams}
-              out:scale={outAnimationParams}
-              onclick={() => onreplicateData?.()}
-              onkeyup={dummyFn}
-            >
-              <Fa icon={faCloudArrowUp} class="text-sm xl:text-xs" />
-              <span>Export</span>
+            <div class="transform-gpu" in:scale={inAnimationParams} out:scale={outAnimationParams}>
+              <HeaderIconButton
+                icon={faCloudArrowUp}
+                title="Open Export Menu"
+                label="Export"
+                onclick={() => onreplicateData?.()}
+              />
             </div>
             {#if $storageSource$ === StorageKey.BROWSER}
               <div
-                tabindex="0"
-                role="button"
-                title="Delete Statistics for selected Books"
-                class="transform-gpu {labelIconClasses}"
+                class="transform-gpu"
                 in:scale={inAnimationParams}
                 out:scale={outAnimationParams}
-                onclick={() => ondeleteStatistics?.()}
-                onkeyup={dummyFn}
               >
-                <Fa icon={faCalendarXmark} class="text-sm xl:text-xs" />
-                <span>Delete Statistics</span>
+                <HeaderIconButton
+                  icon={faCalendarXmark}
+                  title="Delete Statistics for selected Books"
+                  label="Delete Statistics"
+                  onclick={() => ondeleteStatistics?.()}
+                />
               </div>
             {/if}
-            <div
-              tabindex="0"
-              role="button"
-              title="Delete selected Books"
-              class="transform-gpu {labelIconClasses}"
-              in:scale={inAnimationParams}
-              out:scale={outAnimationParams}
-              onclick={() => onremoveClick?.()}
-              onkeyup={dummyFn}
-            >
-              <Fa icon={faTrash} class="text-sm xl:text-xs" />
-              <span>Delete Book</span>
+            <div class="transform-gpu" in:scale={inAnimationParams} out:scale={outAnimationParams}>
+              <HeaderIconButton
+                icon={faTrash}
+                title="Delete selected Books"
+                label="Delete Book"
+                onclick={() => onremoveClick?.()}
+              />
             </div>
           {/if}
         {/if}
@@ -386,20 +394,14 @@
               bind:this={storageSourceElm}
             >
               {#snippet icon()}
-                <div>
-                  {#key $storageIcon$}
-                    <div class={labelIconClasses}>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox={$storageIcon$.viewBox}
-                        class="h-3.5 w-3.5 xl:h-3 xl:w-3"
-                      >
-                        <path class="fill-current" d={$storageIcon$.d} />
-                      </svg>
-                      <span>Storage Source&nbsp;▾</span>
-                    </div>
-                  {/key}
-                </div>
+                {#key $storageIcon$}
+                  <div title="Select Storage Source" class={labelIconClasses}>
+                    <HeaderLabeledContent
+                      label="Storage Source ▾"
+                      iconContent={storageSourceIcon}
+                    />
+                  </div>
+                {/key}
               {/snippet}
               {#snippet content()}
                 <div class="w-28 bg-gray-700">
@@ -448,13 +450,14 @@
               bind:this={sortOptionsElm}
             >
               {#snippet icon()}
-                <div class={labelIconClasses} title="Select Sort Options">
-                  {#if $booklistSortOptions$[$storageSource$].direction === SortDirection.ASC}
-                    <Fa icon={faArrowDownShortWide} class="text-sm xl:text-xs" />
-                  {:else}
-                    <Fa icon={faArrowDownWideShort} class="text-sm xl:text-xs" />
-                  {/if}
-                  <span>Sort&nbsp;▾</span>
+                <div title="Select Sort Options" class={labelIconClasses}>
+                  <HeaderLabeledContent
+                    label="Sort ▾"
+                    iconContent={$booklistSortOptions$[$storageSource$].direction ===
+                    SortDirection.ASC
+                      ? sortAscIcon
+                      : sortDescIcon}
+                  />
                 </div>
               {/snippet}
               {#snippet content()}

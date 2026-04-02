@@ -376,7 +376,7 @@
 </script>
 
 <div class="mb-8 sm:col-span-2 lg:col-span-3">
-  <div class="flex flex-grow">
+  <div class="flex grow">
     <h1 class="mb-2 text-xl font-medium w-full">
       <span class="capitalize">Reading Goals</span>
     </h1>

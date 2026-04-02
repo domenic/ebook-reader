@@ -256,7 +256,7 @@
   <div class="grow mt-8 pl-1 overflow-auto" bind:this={statisticsTitleFilterTableContainerElm}>
     {#if filteredTitles.length}
       <div
-        class="grid grid-cols-[max-content,auto] gap-x-8 items-center"
+        class="grid grid-cols-[max-content_auto] gap-x-8 items-center"
         style:grid-auto-rows={`${statisticsTitleFilterBaseRowRem}rem`}
         style:row-gap={`${statisticsTitleFilterBaseRowGap}rem`}
       >

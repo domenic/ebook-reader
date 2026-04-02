@@ -120,7 +120,7 @@
     <div
       tabindex="0"
       role="button"
-      class="tap-highlight-transparent absolute inset-0 bg-black/[.32]"
+      class="tap-highlight-transparent absolute inset-0 bg-black/32"
       onclick={() => {
         if (!clickOnCloseDisabled) {
           closeAllDialogs();

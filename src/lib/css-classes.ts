@@ -11,9 +11,10 @@ export const opacityHeaderIcon = 'opacity-60 hover:opacity-100 transition-opacit
 export const nTranslateXHeaderFa = '-translate-x-4 xl:-translate-x-3';
 export const translateXHeaderFa = 'translate-x-4 xl:translate-x-3';
 export const inputClasses =
-  'mt-1 block w-full px-0.5 bg-background-color border-0 border-b-2 border-gray-400/50 focus:ring-0 focus:border-black transition';
+  'mt-1 block w-full px-0.5 bg-background-color border-0 border-b-2 border-b-gray-400/50 focus:ring-0 focus:border-b-black focus:outline-hidden transition-colors';
 export const buttonClasses =
-  'inline-block no-underline font-medium rounded min-w-[32px] sm:min-w-[64px] px-4 leading-9 cursor-pointer text-cyan-900';
+  'inline-block no-underline font-medium rounded-sm min-w-[32px] sm:min-w-[64px] px-4 leading-9 cursor-pointer text-cyan-900';
 export const baseIconClasses = `flex justify-center select-none items-center h-12 w-12 cursor-pointer text-xl xl:h-10 xl:w-10 xl:text-lg ${pHeaderMat} ${opacityHeaderIcon}`;
 export const labelIconClasses = `flex flex-col items-center justify-center h-12 xl:h-10 min-w-16 px-2 cursor-pointer select-none text-center text-xs xl:text-[10px] ${opacityHeaderIcon}`;
+export const labeledHeaderIconClasses = 'mb-0.5 text-sm leading-none xl:text-xs';
 export const headerDividerClasses = 'mx-1 h-6 w-px self-center bg-white/30';

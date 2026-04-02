@@ -39,7 +39,7 @@
   }: Props = $props();
 
   const tableHeaderClasses =
-    'flex items-center py-2.5 px-0 text-sm w-full bg-transparent border-0 md:border-b-2 border-gray-200 appearance-none focus:outline-none focus:ring-0 focus:border-gray-200 peer lg:text-base';
+    'flex items-center py-2.5 px-0 text-sm w-full bg-transparent border-0 md:border-b-2 border-gray-200 appearance-none focus:outline-hidden focus:ring-0 focus:border-gray-200 peer lg:text-base';
 
   let summaryHeaderPopover = $state<Popover>();
 

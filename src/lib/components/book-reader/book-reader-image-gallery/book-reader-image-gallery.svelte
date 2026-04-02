@@ -130,7 +130,7 @@
 
 <svelte:window onkeydown={onKeyDown} />
 <div
-  class="flex h-full w-full writing-horizontal-tb fixed top-0 left-0 z-[60]"
+  class="flex h-full w-full writing-horizontal-tb fixed top-0 left-0 z-60"
   style:color={fontColor}
 >
   <div
@@ -189,7 +189,7 @@
   </div>
   <div
     tabindex="-1"
-    class="invisible tap-highlight-transparent bg-black/[.85] lg:visible lg:flex lg:flex-1 lg:flex-col"
+    class="invisible tap-highlight-transparent bg-black/85 lg:visible lg:flex lg:flex-1 lg:flex-col"
     bind:this={imageContainer}
   >
     {#if selectedImage}

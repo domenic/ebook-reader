@@ -1,4 +1,7 @@
 {
   "eslint.validate": ["javascript", "svelte", "typescript"],
-  "js/ts.tsdk.path": "node_modules/typescript/lib"
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }

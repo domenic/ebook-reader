@@ -815,7 +815,7 @@
 
 {#if $isTrackerMenuOpen$}
   <div
-    class="writing-horizontal-tb fixed top-0 left-0 z-[60] flex h-full w-full max-w-xl flex-col justify-between"
+    class="writing-horizontal-tb fixed top-0 left-0 z-60 flex h-full w-full max-w-xl flex-col justify-between"
     style:color={fontColor}
     style:background-color={backgroundColor}
     in:fly={{ x: -100, duration: 100, easing: quintInOut }}
