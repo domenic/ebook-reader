@@ -605,12 +605,6 @@
       syncedPromise.finally(() => document.dispatchEvent(new CustomEvent(SYNCED)));
     } else if (detail.type === 'skipKeyDownListener') {
       skipKeyDownListener$.next(detail.params.value);
-    } else if (
-      detail.type === 'sync' &&
-      (detail.syncType === StorageDataType.AUDIOBOOK ||
-        detail.syncType === StorageDataType.SUBTITLE)
-    ) {
-      scheduleReplication(detail.syncType);
     }
   }
   /** Experimental Code - May be removed any time without warning */
@@ -1065,13 +1059,7 @@
         localStorageHandler,
         false,
         [context],
-        [
-          StorageDataType.PROGRESS,
-          StorageDataType.STATISTICS,
-          StorageDataType.READING_GOALS,
-          StorageDataType.AUDIOBOOK,
-          StorageDataType.SUBTITLE
-        ]
+        [StorageDataType.PROGRESS, StorageDataType.STATISTICS, StorageDataType.READING_GOALS]
       );
 
       if (error) {
@@ -1287,17 +1275,13 @@
       }
 
       if (dataToReplicateQueue.length) {
-        const isAudioBookOnly =
-          dataToReplicate.length === 1 && dataToReplicate[0] === StorageDataType.AUDIOBOOK;
         dataToReplicate = JSON.parse(JSON.stringify(dataToReplicateQueue));
         dataToReplicateQueue = [];
 
-        if (isSilent || isAudioBookOnly) {
+        if (isSilent) {
           executeReplicate$.next();
-        } else if (!isAudioBookOnly) {
-          await executeReplication(false);
         } else {
-          dataToReplicate = [];
+          await executeReplication(false);
         }
       } else {
         dataToReplicate = [];

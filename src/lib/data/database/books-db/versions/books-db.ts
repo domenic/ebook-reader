@@ -9,7 +9,5 @@ export type BooksDbStorageSource = BooksDb['storageSource']['value'];
 export type BooksDbStatistic = BooksDb['statistic']['value'];
 export type BooksDbReadingGoal = BooksDb['readingGoal']['value'];
 export type BooksDbLastModified = BooksDb['lastModified']['value'];
-export type BooksDbAudioBook = BooksDb['audioBook']['value'];
-export type BooksDbSubtitleData = BooksDb['subtitle']['value'];
 export type BooksDbHandle = BooksDb['handle']['value'];
 export const currentDbVersion = 6;

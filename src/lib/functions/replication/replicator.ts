@@ -1,5 +1,5 @@
 import { BackupStorageHandler } from '$lib/data/storage/handler/backup-handler';
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
+import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
 import { storage } from '$lib/data/window/navigator/storage';
 import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
 import { database, requestPersistentStorage$ } from '$lib/data/store';
@@ -144,9 +144,7 @@ export async function importBackup(
       StorageDataType.DATA,
       StorageDataType.PROGRESS,
       StorageDataType.STATISTICS,
-      StorageDataType.READING_GOALS,
-      StorageDataType.AUDIOBOOK,
-      StorageDataType.SUBTITLE
+      StorageDataType.READING_GOALS
     ],
     cancelSignal
   );
@@ -173,8 +171,6 @@ export async function replicateData(
   const processProgressData = dataToReplicate.includes(StorageDataType.PROGRESS);
   const processStatistics = dataToReplicate.includes(StorageDataType.STATISTICS);
   const processReadingGoals = dataToReplicate.includes(StorageDataType.READING_GOALS);
-  const processAudioBook = dataToReplicate.includes(StorageDataType.AUDIOBOOK);
-  const processSubtitleData = dataToReplicate.includes(StorageDataType.SUBTITLE);
   const replicationLimiter = pLimit(1);
   const replicationTasks: Promise<void>[] = [];
 
@@ -267,52 +263,6 @@ export async function replicateData(
               }
 
               checkCancelAndProgress(cancelSignal, !dataProcessed, !statistics);
-            }
-          }
-
-          if (processAudioBook) {
-            if (
-              await targetHandler.isAudioBookPresentAndUpToDate(
-                await sourceHandler.getFilenameForRecentCheck(FilePrefix.AUDIO_BOOK)
-              )
-            ) {
-              checkCancelAndProgress(cancelSignal, !dataProcessed, true);
-              checkCancelAndProgress(cancelSignal, !dataProcessed, true);
-            } else {
-              const audioBook = await sourceHandler.getAudioBook();
-
-              checkCancelAndProgress(cancelSignal, !dataProcessed);
-
-              if (audioBook) {
-                await targetHandler.saveAudioBook(audioBook);
-
-                dataProcessed = true;
-              }
-
-              checkCancelAndProgress(cancelSignal, !dataProcessed, !audioBook);
-            }
-          }
-
-          if (processSubtitleData) {
-            if (
-              await targetHandler.isSubtitleDataPresentAndUpToDate(
-                await sourceHandler.getFilenameForRecentCheck(FilePrefix.SUBTITLE)
-              )
-            ) {
-              checkCancelAndProgress(cancelSignal, !dataProcessed, true);
-              checkCancelAndProgress(cancelSignal, !dataProcessed, true);
-            } else {
-              const subtitleData = await sourceHandler.getSubtitleData();
-
-              checkCancelAndProgress(cancelSignal, !dataProcessed);
-
-              if (subtitleData) {
-                await targetHandler.saveSubtitleData(subtitleData);
-
-                dataProcessed = true;
-              }
-
-              checkCancelAndProgress(cancelSignal, !dataProcessed, !subtitleData);
             }
           }
 
