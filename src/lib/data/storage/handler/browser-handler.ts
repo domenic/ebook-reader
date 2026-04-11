@@ -1,11 +1,9 @@
-import { BaseStorageHandler, FilePrefix } from '$lib/data/storage/handler/base-handler';
+import { BaseStorageHandler } from '$lib/data/storage/handler/base-handler';
 import type {
-  BooksDbAudioBook,
   BooksDbBookData,
   BooksDbBookmarkData,
   BooksDbReadingGoal,
-  BooksDbStatistic,
-  BooksDbSubtitleData
+  BooksDbStatistic
 } from '$lib/data/database/books-db/versions/books-db';
 import { database, lastReadingGoalsModified$ } from '$lib/data/store';
 
@@ -135,16 +133,6 @@ export class BrowserStorageHandler extends BaseStorageHandler {
       fileName = lastGoalModified
         ? BaseStorageHandler.getReadingGoalsFileName(lastGoalModified)
         : undefined;
-    } else if (fileIdentifier === FilePrefix.AUDIO_BOOK) {
-      const audioBook = await this.getAudioBook();
-
-      fileName = audioBook ? BaseStorageHandler.getAudioBookFileName(audioBook) : undefined;
-    } else if (fileIdentifier === FilePrefix.SUBTITLE) {
-      const subtitleData = await this.getSubtitleData();
-
-      fileName = subtitleData
-        ? BaseStorageHandler.getSubtitleDataFileName(subtitleData)
-        : undefined;
     }
 
     BrowserStorageHandler.reportProgress(0.5);
@@ -223,44 +211,6 @@ export class BrowserStorageHandler extends BaseStorageHandler {
     );
   }
 
-  async isAudioBookPresentAndUpToDate(referenceFilename: string | undefined) {
-    if (!referenceFilename) {
-      BaseStorageHandler.reportProgress();
-
-      return false;
-    }
-
-    const audioBook = await this.getAudioBook();
-    const fileName = audioBook ? BaseStorageHandler.getAudioBookFileName(audioBook) : undefined;
-
-    return BaseStorageHandler.checkIsPresentAndUpToDate<BooksDbAudioBook>(
-      BaseStorageHandler.getAudioBookMetadata,
-      'lastAudioBookModified',
-      referenceFilename,
-      fileName
-    );
-  }
-
-  async isSubtitleDataPresentAndUpToDate(referenceFilename: string | undefined) {
-    if (!referenceFilename) {
-      BaseStorageHandler.reportProgress();
-
-      return false;
-    }
-
-    const subtitleData = await this.getSubtitleData();
-    const fileName = subtitleData
-      ? BaseStorageHandler.getSubtitleDataFileName(subtitleData)
-      : undefined;
-
-    return BaseStorageHandler.checkIsPresentAndUpToDate<BooksDbSubtitleData>(
-      BaseStorageHandler.getSubtitleDataMetadata,
-      'lastSubtitleDataModified',
-      referenceFilename,
-      fileName
-    );
-  }
-
   async getBook() {
     const book = this.currentContext.id
       ? await database.getData(this.currentContext.id)
@@ -306,22 +256,6 @@ export class BrowserStorageHandler extends BaseStorageHandler {
     BaseStorageHandler.reportProgress();
 
     return cover;
-  }
-
-  async getAudioBook() {
-    const audioBook = await database.getAudioBook(this.currentContext.title);
-
-    BaseStorageHandler.reportProgress();
-
-    return audioBook;
-  }
-
-  async getSubtitleData() {
-    const subtitleData = await database.getSubtitleData(this.currentContext.title);
-
-    BaseStorageHandler.reportProgress();
-
-    return subtitleData;
   }
 
   async saveBook(
@@ -444,26 +378,6 @@ export class BrowserStorageHandler extends BaseStorageHandler {
     }
 
     return { readingGoals, lastGoalModified };
-  }
-
-  async saveAudioBook(data: BooksDbAudioBook | File) {
-    if (data instanceof File) {
-      BaseStorageHandler.reportProgress();
-
-      return;
-    }
-
-    await database.putAudioBook(data);
-  }
-
-  async saveSubtitleData(data: BooksDbSubtitleData | File) {
-    if (data instanceof File) {
-      BaseStorageHandler.reportProgress();
-
-      return;
-    }
-
-    await database.putSubtitleData(data);
   }
 
   async deleteBookData(

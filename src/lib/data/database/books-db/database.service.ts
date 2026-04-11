@@ -1,11 +1,9 @@
 import type {
-  BooksDbAudioBook,
   BooksDbBookData,
   BooksDbBookmarkData,
   BooksDbReadingGoal,
   BooksDbStatistic,
-  BooksDbStorageSource,
-  BooksDbSubtitleData
+  BooksDbStorageSource
 } from '$lib/data/database/books-db/versions/books-db';
 import { Observable, Subject, from } from 'rxjs';
 import { StorageDataType, StorageKey } from '$lib/data/storage/storage-types';
@@ -325,18 +323,6 @@ export class DatabaseService {
     return db.put('bookmark', bookmarkData);
   }
 
-  async putAudioBook(audioBook: BooksDbAudioBook) {
-    const db = await this.db;
-
-    return db.put('audioBook', audioBook);
-  }
-
-  async putSubtitleData(subtitleData: BooksDbSubtitleData) {
-    const db = await this.db;
-
-    return db.put('subtitle', subtitleData);
-  }
-
   async putLastItem(dataId: number) {
     const db = await this.db;
     const result = await db.put('lastItem', { dataId }, LAST_ITEM_KEY);
@@ -363,10 +349,8 @@ export class DatabaseService {
       | 'statistic'
       | 'lastItem'
       | 'lastModified'
-      | 'audioBook'
-      | 'subtitle'
       | 'handle'
-    )[] = ['data', 'audioBook', 'subtitle', 'handle'];
+    )[] = ['data', 'handle'];
     const shouldDeleteLastItem = cachedData.lastItem === dataId;
     const shouldDeleteBookmark = cachedData.bookmarkIds.has(dataId);
 
@@ -406,8 +390,6 @@ export class DatabaseService {
       }
 
       if (bookTitle) {
-        await tx.objectStore('audioBook').delete(bookTitle);
-        await tx.objectStore('subtitle').delete(bookTitle);
         await tx.objectStore('handle').delete(IDBKeyRange.bound([bookTitle], [bookTitle, []]));
       }
 
@@ -1039,17 +1021,5 @@ export class DatabaseService {
     }
 
     lastReadingGoalsModified$.next(Date.now());
-  }
-
-  async getAudioBook(title: string) {
-    const db = await this.db;
-
-    return db.get('audioBook', title);
-  }
-
-  async getSubtitleData(title: string) {
-    const db = await this.db;
-
-    return db.get('subtitle', title);
   }
 }
