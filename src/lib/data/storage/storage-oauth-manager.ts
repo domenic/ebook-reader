@@ -16,6 +16,7 @@ import {
 import { logger } from '$lib/data/logger';
 import {
   encrypt,
+  isAppDefault,
   unlockStorageData,
   type RemoteContext,
   type StorageUnlockAction
@@ -37,7 +38,7 @@ export const storageOAuthTokens = new Map<string, OAuthTokenData>();
 export class StorageOAuthManager {
   private storageType: StorageKey;
 
-  private refreshEndpoint;
+  private readonly refreshEndpoint;
 
   private parentWindow: Window | undefined;
 
@@ -84,27 +85,31 @@ export class StorageOAuthManager {
       this.storageSourceName = storageSourceName;
     }
 
+    // 1. Try the in-memory cached token
     let token = await this.verifyToken(oldToken);
 
     if (token) {
       return token.accessToken;
     }
 
+    // 2. Load credentials (and any stored refresh token)
     this.remoteData = undefined;
 
     let secret: string | undefined;
     let unlockResult = oldUnlockResult;
     let storageSource = oldStorageSource;
+    const defaultSource = isAppDefault(storageSourceName);
 
-    if (storageSourceName === StorageSourceDefault.GDRIVE_DEFAULT) {
+    if (defaultSource) {
+      const db = await database.db;
+      const stored = await db.get('storageSource', storageSourceName);
+      const storedData = stored?.data as RemoteContext | undefined;
+
+      const isGDrive = storageSourceName === StorageSourceDefault.GDRIVE_DEFAULT;
       this.remoteData = {
-        clientId: gDriveClientId,
-        clientSecret: gDriveClientSecret
-      };
-    } else if (storageSourceName === StorageSourceDefault.ONEDRIVE_DEFAULT) {
-      this.remoteData = {
-        clientId: oneDriveClientId,
-        clientSecret: ''
+        clientId: isGDrive ? gDriveClientId : oneDriveClientId,
+        clientSecret: isGDrive ? gDriveClientSecret : '',
+        refreshToken: storedData?.refreshToken
       };
     } else {
       if (!unlockResult) {
@@ -139,15 +144,18 @@ export class StorageOAuthManager {
         refreshToken: unlockResult.refreshToken
       };
 
-      token = await this.verifyToken(token);
-
-      if (token) {
-        return token.accessToken;
-      }
-
       secret = unlockResult.secret;
     }
 
+    // 3. Try refreshing with stored refresh token
+    token = await this.verifyToken(undefined);
+
+    if (token) {
+      storageOAuthTokens.set(storageSourceName, token);
+      return token.accessToken;
+    }
+
+    // 4. No valid token — need interactive auth
     this.parentWindow = window;
 
     logger.warn(`Opening auth window for ${storageSourceName} (${this.storageType})`);
@@ -206,45 +214,39 @@ export class StorageOAuthManager {
       throw new Error('Unable to open login window. Please check your popup settings');
     }
 
+    // 5. Wait for popup auth result and persist refresh token
     let errorMessage = '';
 
     try {
-      const existingStorageSourceData = storageSource || {
-        storedInManager: false,
-        encryptionDisabled: false
-      };
-
       token = await this.waitForAuth(window);
 
       storageOAuthTokens.set(storageSourceName, token);
 
-      if (
-        this.parentWindow &&
-        this.remoteData.clientId &&
-        (this.storageType !== StorageKey.GDRIVE || this.remoteData.clientSecret) &&
-        token.refreshToken &&
-        token.refreshToken !== this.remoteData.refreshToken &&
-        (secret || existingStorageSourceData.encryptionDisabled)
-      ) {
+      if (token.refreshToken && token.refreshToken !== this.remoteData.refreshToken) {
         this.remoteData.refreshToken = token.refreshToken;
 
         try {
           const db = await database.db;
-          const newData = existingStorageSourceData.encryptionDisabled
-            ? {
-                clientId: this.remoteData.clientId,
-                clientSecret: this.remoteData.clientSecret,
-                refreshToken: token.refreshToken
-              }
-            : await encrypt(
-                this.parentWindow,
-                JSON.stringify({
+          const existingStorageSourceData = storageSource || {
+            storedInManager: false,
+            encryptionDisabled: false
+          };
+          const newData =
+            defaultSource || existingStorageSourceData.encryptionDisabled
+              ? {
                   clientId: this.remoteData.clientId,
                   clientSecret: this.remoteData.clientSecret,
                   refreshToken: token.refreshToken
-                }),
-                secret!
-              );
+                }
+              : await encrypt(
+                  this.parentWindow,
+                  JSON.stringify({
+                    clientId: this.remoteData.clientId,
+                    clientSecret: this.remoteData.clientSecret,
+                    refreshToken: token.refreshToken
+                  }),
+                  secret!
+                );
 
           await db.put('storageSource', {
             ...existingStorageSourceData,
@@ -288,17 +290,9 @@ export class StorageOAuthManager {
         this.refreshEndpoint &&
         this.storageSourceName &&
         this.remoteData?.clientId &&
-        (this.storageType !== StorageKey.GDRIVE || this.remoteData.clientSecret) &&
         this.remoteData.refreshToken
       )
     ) {
-      logger.warn(
-        `Cannot refresh token for ${this.storageSourceName} (${this.storageType}): ` +
-          `refreshEndpoint=${!!this.refreshEndpoint}, ` +
-          `clientId=${!!this.remoteData?.clientId}, ` +
-          `clientSecret=${!!this.remoteData?.clientSecret}, ` +
-          `refreshToken=${!!this.remoteData?.refreshToken}`
-      );
       return undefined;
     }
 
@@ -359,29 +353,25 @@ export class StorageOAuthManager {
   }
 
   private async stashAuthData() {
-    if (!this.parentWindow || !this.remoteData) {
+    if (!this.remoteData) {
       return;
     }
 
     if (!this.codeVerifier) {
       const arr = new Uint8Array(32);
-      this.parentWindow.crypto.getRandomValues(arr);
+      crypto.getRandomValues(arr);
       this.codeVerifier = StorageOAuthManager.base64Url(arr);
     }
 
     const codeChallenge = StorageOAuthManager.base64Url(
       new Uint8Array(
-        await this.parentWindow.crypto.subtle.digest(
-          'SHA-256',
-          new TextEncoder().encode(this.codeVerifier)
-        )
+        await crypto.subtle.digest('SHA-256', new TextEncoder().encode(this.codeVerifier))
       )
     );
 
     const authData = {
       ...this.remoteData,
       ...StorageOAuthManager.getAuthVariables(this.storageType),
-      sendSecret: this.storageType === StorageKey.GDRIVE,
       needsRefreshToken: !this.remoteData.refreshToken,
       codeVerifier: this.codeVerifier,
       codeChallenge

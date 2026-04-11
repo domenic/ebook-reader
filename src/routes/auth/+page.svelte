@@ -39,7 +39,7 @@
         return;
       }
 
-      const { clientId, clientSecret, sendSecret, tokenEndpoint, codeVerifier, needsRefreshToken } =
+      const { clientId, clientSecret, tokenEndpoint, codeVerifier, needsRefreshToken } =
         JSON.parse(stored);
 
       const params = new URLSearchParams();
@@ -47,7 +47,7 @@
       params.append('redirect_uri', redirectUri);
       params.append('client_id', clientId);
 
-      if (sendSecret && clientSecret) {
+      if (clientSecret) {
         params.append('client_secret', clientSecret);
       }
 
