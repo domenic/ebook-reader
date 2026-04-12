@@ -27,7 +27,6 @@
   } from '$lib/data/store';
   import { inputAllowDirectory } from '$lib/functions/file-dom/input-allow-directory';
   import { inputFile } from '$lib/functions/file-dom/input-file';
-  import { isMobile$ } from '$lib/functions/utils';
   import {
     faArrowDownShortWide,
     faArrowDownWideShort,
@@ -45,6 +44,8 @@
   import Fa from 'svelte-fa';
   import { quintOut } from 'svelte/easing';
   import { scale } from 'svelte/transition';
+
+  const supportsDirectoryPicking = !browser || 'webkitdirectory' in HTMLInputElement.prototype;
 
   interface Props {
     selectMode: boolean;
@@ -241,7 +242,7 @@
             label="Import Files"
             onclick={() => fileImportElm?.click()}
           />
-          {#if !$isMobile$}
+          {#if supportsDirectoryPicking}
             <HeaderButton
               faIcon={faFolderPlus}
               title="Import books from a folder"
