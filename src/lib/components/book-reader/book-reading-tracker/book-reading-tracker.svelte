@@ -326,6 +326,7 @@
 
       lastTrackerFlushTime = now;
       lastTrackerTick = now;
+      updateLastExploredCharCount();
 
       return interval(1000);
     }),
@@ -360,12 +361,6 @@
 
   $effect(() => {
     updateReadingGoalWindowForPausedState($isTrackerMenuOpen$);
-  });
-
-  $effect(() => {
-    if (!$isTrackerPaused$) {
-      updateLastExploredCharCount();
-    }
   });
 
   $effect(() => {
