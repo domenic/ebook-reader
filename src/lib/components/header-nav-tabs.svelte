@@ -25,6 +25,10 @@
     { routeId: '/manage', label: 'Manager', icon: faSignOutAlt }
   ];
 
+  function isSelectedRoute(routeId: string) {
+    return page.route.id === routeId || page.route.id?.startsWith(`${routeId}/`);
+  }
+
   function handleClick(routeId: string, query = '') {
     onnavigate?.(routeId);
 
@@ -47,7 +51,7 @@
   <HeaderButton
     faIcon={tab.icon}
     label={tab.label}
-    selected={page.route.id === tab.routeId}
+    selected={isSelectedRoute(tab.routeId)}
     variant="tab"
     onclick={() => handleClick(tab.routeId)}
   />

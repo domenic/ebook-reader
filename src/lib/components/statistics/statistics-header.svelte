@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { RouteId } from '$app/types';
   import {
     faCalendarDays,
     faCopy,
@@ -9,26 +10,30 @@
   import HeaderButton from '$lib/components/header-button.svelte';
   import HeaderMenuButton from '$lib/components/header-menu-button.svelte';
   import HeaderNavTabs from '$lib/components/header-nav-tabs.svelte';
+  import type { StatisticsRoute } from '$lib/components/statistics/statistics-route';
   import {
-    StatisticsTab,
     copyStatisticsData$,
     statisticsTitleFilterEnabled$,
     statisticsTitleFilterIsOpen$,
     type StatisticsDataSource
   } from '$lib/components/statistics/statistics-types';
   import { baseHeaderClasses, headerDividerClasses, pxScreen } from '$lib/css-classes';
-  import { lastStatisticsTab$ } from '$lib/data/store';
 
   interface Props {
+    activeRouteId?: RouteId | null;
     showStatisticsSettings: boolean;
+    onselecttab?: (href: StatisticsRoute) => void;
   }
 
-  let { showStatisticsSettings = $bindable() }: Props = $props();
+  let { activeRouteId, showStatisticsSettings = $bindable(), onselecttab }: Props = $props();
 
   const copyStatisticsDataItems: StatisticsDataSource[] = [
     { key: 'readingTime', label: 'Reading Time' },
     { key: 'charactersRead', label: 'Characters Read' }
   ];
+
+  let summarySelected = $derived(activeRouteId === '/statistics/summary');
+  let heatmapSelected = $derived(activeRouteId === '/statistics/heatmap');
 </script>
 
 <div class="elevation-4 fixed inset-x-0 top-0 z-10">
@@ -38,22 +43,18 @@
         <HeaderButton
           faIcon={faCalendarDays}
           label="Summary"
-          selected={$lastStatisticsTab$ === StatisticsTab.SUMMARY}
+          selected={summarySelected}
           variant="tab"
-          title={$lastStatisticsTab$ === StatisticsTab.SUMMARY
-            ? 'You are already on the Summary Tab'
-            : 'Switch to Summary Tab'}
-          onclick={() => ($lastStatisticsTab$ = StatisticsTab.SUMMARY)}
+          title={summarySelected ? undefined : 'Switch to Summary tab'}
+          onclick={() => onselecttab?.('/statistics/summary')}
         />
         <HeaderButton
           faIcon={faMap}
           label="Heatmap"
-          selected={$lastStatisticsTab$ === StatisticsTab.OVERVIEW}
+          selected={heatmapSelected}
           variant="tab"
-          title={$lastStatisticsTab$ === StatisticsTab.OVERVIEW
-            ? 'You are already on the Heatmap Tab'
-            : 'Switch to Heatmap Tab'}
-          onclick={() => ($lastStatisticsTab$ = StatisticsTab.OVERVIEW)}
+          title={heatmapSelected ? undefined : 'Switch to Heatmap tab'}
+          onclick={() => onselecttab?.('/statistics/heatmap')}
         />
         <div class={headerDividerClasses}></div>
         <HeaderButton
