@@ -7,8 +7,8 @@ export enum LocalFont {
   NOTOSANSJP = 'Noto Sans JP',
   NOTOSERIFJP = 'Noto Serif JP',
   SHIPPORIMINCHO = 'Shippori Mincho',
-  SERIF = 'Serif',
-  SANSSERIF = 'Sans-Serif'
+  SERIF = 'Browser default serif',
+  SANSSERIF = 'Browser default sans-serif'
 }
 
 export interface UserFont {
@@ -28,8 +28,8 @@ export const reservedFontNames = new Set([
   'Noto Sans JP',
   'Noto Serif JP',
   'Shippori Mincho',
-  'Serif',
-  'Sans-Serif'
+  'Browser default serif',
+  'Browser default sans-serif'
 ]);
 
 export function isStoredFont(fontName: string, userFonts: UserFont[]) {
@@ -37,3 +37,37 @@ export function isStoredFont(fontName: string, userFonts: UserFont[]) {
     reservedFontNames.has(fontName) || !!userFonts.find((userFont) => userFont.name === fontName)
   );
 }
+
+const genericFamilyCss: Record<string, string> = {
+  [LocalFont.SERIF]: 'serif',
+  [LocalFont.SANSSERIF]: 'sans-serif'
+};
+
+export function fontFamilyCss(name: string): string {
+  return genericFamilyCss[name] ?? `'${name}'`;
+}
+
+export type FontGroup = 'serif' | 'sans-serif';
+
+export const fontGroupLabels: Record<FontGroup, string> = {
+  serif: 'Serif font',
+  'sans-serif': 'Sans-serif font'
+};
+
+export const defaultFonts: Record<FontGroup, LocalFont> = {
+  serif: LocalFont.NOTOSERIFJP,
+  'sans-serif': LocalFont.NOTOSANSJP
+};
+
+export const bundledFonts: Record<FontGroup, LocalFont[]> = {
+  serif: [
+    LocalFont.NOTOSERIFJP,
+    LocalFont.KZUDMINCHO,
+    LocalFont.GENEI,
+    LocalFont.SHIPPORIMINCHO,
+    LocalFont.KLEEONE,
+    LocalFont.KLEEONESEMIBOLD,
+    LocalFont.SERIF
+  ],
+  'sans-serif': [LocalFont.NOTOSANSJP, LocalFont.KZUDGOTHIC, LocalFont.SANSSERIF]
+};
