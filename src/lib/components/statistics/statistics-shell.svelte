@@ -3,9 +3,6 @@
   import { faSpinner } from '@fortawesome/free-solid-svg-icons';
   import { getDefaultStatistic } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
   import SidebarOverlay from '$lib/components/sidebar-overlay.svelte';
-  import { HeatmapType } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
-  import StatisticsHeatmap from '$lib/components/statistics/statistics-heatmap/statistics-heatmap.svelte';
-  import StatisticsSummary from '$lib/components/statistics/statistics-summary/statistics-summary.svelte';
   import type {
     StatisticsDeleteRequest,
     StatisticsEditRequest
@@ -13,7 +10,6 @@
   import StatisticsTitleFilter from '$lib/components/statistics/statistics-title-filter.svelte';
   import {
     type BookStatistic,
-    StatisticsTab,
     StatisticsReadingDataAggregationMode,
     statisticsRangeTemplates,
     copyStatisticsData$,
@@ -41,12 +37,9 @@
     confirmStatisticsDeletion$,
     database,
     lastPrimaryReadingDataAggregationMode$,
-    lastReadingDataHeatmapAggregationMode$,
-    lastReadingGoalsHeatmapAggregationMode$,
     lastStatisticsEndDate$,
     lastStatisticsRangeTemplate$,
     lastStatisticsStartDate$,
-    lastStatisticsTab$,
     skipKeyDownListener$,
     startDayHoursForTracker$,
     statisticsTabKeybindMap$
@@ -61,14 +54,30 @@
   import { pluralize } from '$lib/functions/utils';
   import pLimit from 'p-limit';
   import { tap } from 'rxjs';
-  import { onDestroy, onMount, untrack } from 'svelte';
+  import { onDestroy, onMount, untrack, type Snippet } from 'svelte';
   import Fa from 'svelte-fa';
+
+  interface StatisticsShellViewProps {
+    aggregatedStatistics: BookStatistic[];
+    handleDeleteRequest: (request: StatisticsDeleteRequest) => Promise<void>;
+    handleEditRequest: (request: StatisticsEditRequest) => Promise<void>;
+    readingGoals: BooksDbReadingGoal[];
+    statisticsData: BookStatistic[];
+    statisticsDateRangeLabel: string;
+    statisticsTitleFilters: Map<string, boolean>;
+  }
+
+  interface Props {
+    children?: Snippet<[StatisticsShellViewProps]>;
+  }
+
+  let { children }: Props = $props();
 
   const copyStatisticsDataHandler$ = copyStatisticsData$.pipe(
     tap((dataKeyToCopy) => {
       const statistics =
         $lastPrimaryReadingDataAggregationMode$ === StatisticsReadingDataAggregationMode.TITLE
-          ? aggregratedStatistics
+          ? aggregatedStatistics
           : getAggregatedStatistics(StatisticsReadingDataAggregationMode.TITLE);
 
       let logKey = '';
@@ -77,7 +86,6 @@
         case 'readingTime':
           logKey = 'readtime';
           break;
-
         default:
           logKey = 'reading';
           break;
@@ -87,7 +95,6 @@
 
       for (let index = 0, { length } = statistics; index < length; index += 1) {
         const statistic = statistics[index];
-
         let loggedValue = 0;
 
         if (dataKeyToCopy === 'readingTime') {
@@ -174,12 +181,10 @@
 
                 if (dataToExport.length) {
                   backupHandler.startContext({ id: 0, title: titleToExport, imagePath: '' });
-
                   await backupHandler.saveStatistics(dataToExport, lastStatisticsModified);
                 }
               } catch (error) {
                 exportLimiter.clearQueue();
-
                 throw error;
               }
             })
@@ -263,7 +268,7 @@
   let titlesInStatisticsDateRange = $state(new Set<string>());
   let statisticsData: BookStatistic[] = $state([]);
   let statisticsForSelection: BookStatistic[] = $state([]);
-  let aggregratedStatistics: BookStatistic[] = $state([]);
+  let aggregatedStatistics: BookStatistic[] = $state([]);
   let readingGoals: BooksDbReadingGoal[] = $state([]);
 
   let statisticsDateRangeLabel = $derived(
@@ -278,13 +283,11 @@
       $lastStatisticsEndDate$
     ) {
       todayKey = getDateString(getStartHoursDate($startDayHoursForTracker$));
-
       untrack(() => updateStatisticsData());
     }
   });
 
   onMount(init);
-
   onDestroy(() => dialogManager.dialogs$.next([]));
 
   function onKeyUp(ev: KeyboardEvent) {
@@ -347,7 +350,6 @@
     }
 
     const titleLabel = pluralize(titlesToDelete.size, 'book');
-
     let wasCanceled = false;
 
     if ($confirmStatisticsDeletion$) {
@@ -371,10 +373,7 @@
       .catch(({ message }) => message);
 
     if (error) {
-      messageDialog({
-        title: 'Error',
-        message: `Failed to delete data: ${error}`
-      });
+      messageDialog({ title: 'Error', message: `Failed to delete data: ${error}` });
       $statisticsActionInProgress$ = false;
     } else {
       const filterMap = new Map<string, boolean>();
@@ -414,7 +413,6 @@
 
       for (let index = 0, { length } = titleFilters; index < length; index += 1) {
         const [title, isDisplayed] = titleFilters[index];
-
         newStatisticsTitleFilterData.set(title, isDisplayed);
       }
 
@@ -489,7 +487,6 @@
 
     try {
       await database.updateStatistic(newStatistic);
-
       statisticsData[statisticIndex] = { ...statistic, ...newStatistic };
       updateStatisticsData();
     } catch ({ message }: any) {
@@ -577,8 +574,7 @@
       filterStatisticsForSelection(statistic, newTitleFilterForStatisticsSet)
     );
     titlesInStatisticsDateRange = newTitleFilterForStatisticsSet;
-
-    aggregratedStatistics = [...getAggregatedStatistics($lastPrimaryReadingDataAggregationMode$)];
+    aggregatedStatistics = [...getAggregatedStatistics($lastPrimaryReadingDataAggregationMode$)];
   }
 
   function getAggregatedStatistics(
@@ -705,37 +701,19 @@
 {$setStatisticsDatesToAllTimeHandler$ ?? ''}
 <svelte:window onkeyup={onKeyUp} />
 {#if isLoading}
-  <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
+  <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">
     <Fa icon={faSpinner} spin />
   </div>
 {:else}
-  {#if $lastStatisticsTab$ === StatisticsTab.OVERVIEW}
-    <StatisticsHeatmap
-      {statisticsData}
-      {readingGoals}
-      {statisticsTitleFilters}
-      bind:heatmapAggregration={$lastReadingDataHeatmapAggregationMode$}
-    />
-    {#if readingGoals.length}
-      <div class="mt-8 sm:mt-16">
-        <StatisticsHeatmap
-          {statisticsData}
-          {readingGoals}
-          {statisticsTitleFilters}
-          heatmapType={HeatmapType.READING_GOALS}
-          bind:heatmapAggregration={$lastReadingGoalsHeatmapAggregationMode$}
-        />
-      </div>
-    {/if}
-  {/if}
-  {#if $lastStatisticsTab$ === StatisticsTab.SUMMARY}
-    <StatisticsSummary
-      {aggregratedStatistics}
-      {statisticsDateRangeLabel}
-      ondelete={handleDeleteRequest}
-      onedit={handleEditRequest}
-    />
-  {/if}
+  {@render children?.({
+    aggregatedStatistics,
+    handleDeleteRequest,
+    handleEditRequest,
+    readingGoals,
+    statisticsData,
+    statisticsDateRangeLabel,
+    statisticsTitleFilters
+  })}
 {/if}
 <SidebarOverlay
   bind:open={$statisticsTitleFilterIsOpen$}
@@ -745,8 +723,8 @@
   <StatisticsTitleFilter bind:titleFilterSelections {titlesInStatisticsDateRange} />
 </SidebarOverlay>
 {#if $statisticsActionInProgress$}
-  <div class="tap-highlight-transparent fixed inset-0 bg-black/20 z-70"></div>
-  <div class="flex fixed items-center justify-center inset-0 h-full w-full text-7xl">
+  <div class="tap-highlight-transparent fixed inset-0 z-70 bg-black/20"></div>
+  <div class="fixed inset-0 flex h-full w-full items-center justify-center text-7xl">
     <Fa icon={faSpinner} spin />
   </div>
 {/if}

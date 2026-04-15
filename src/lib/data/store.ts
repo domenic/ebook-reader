@@ -10,8 +10,11 @@ import {
 } from '$lib/components/book-reader/book-reading-tracker/book-reading-tracker';
 import { HeatmapDataAggregration } from '$lib/components/statistics/statistics-heatmap/statistics-heatmap';
 import {
+  defaultStatisticsRoute,
+  type StatisticsRoute
+} from '$lib/components/statistics/statistics-route';
+import {
   StatisticsRangeTemplate,
-  StatisticsTab,
   type BookStatistic,
   StatisticsReadingDataAggregationMode
 } from '$lib/components/statistics/statistics-types';
@@ -340,9 +343,9 @@ export const lastReadingGoalsModified$ = writableNumberLocalStorageSubject()(
   0
 );
 
-export const lastStatisticsTab$ = writableStringLocalStorageSubject<StatisticsTab>()(
-  'lastStatisticsTab',
-  StatisticsTab.OVERVIEW
+export const lastStatisticsRoute$ = writableStringLocalStorageSubject<StatisticsRoute>()(
+  'lastStatisticsRoute',
+  defaultStatisticsRoute
 );
 
 export const lastStatisticsRangeTemplate$ =

@@ -1,26 +1,38 @@
 <script lang="ts">
+  import type { RouteId } from '$app/types';
   import { faBookOpenReader, faClock, faDatabase } from '@fortawesome/free-solid-svg-icons';
   import HeaderButton from '$lib/components/header-button.svelte';
   import HeaderNavTabs from '$lib/components/header-nav-tabs.svelte';
+  import type { SettingsRoute } from '$lib/components/settings/settings-route';
   import { baseHeaderClasses, pxScreen } from '$lib/css-classes';
 
   interface Props {
-    activeSettings: string;
+    activeRouteId?: RouteId | null;
+    onselect?: (href: SettingsRoute) => void;
   }
 
-  let { activeSettings = $bindable() }: Props = $props();
+  interface SettingItem {
+    label: string;
+    href: SettingsRoute;
+    icon: typeof faBookOpenReader;
+  }
 
-  const settingItems = [
+  let { activeRouteId, onselect }: Props = $props();
+
+  const settingItems: SettingItem[] = [
     {
       label: 'Reader',
+      href: '/settings/reader',
       icon: faBookOpenReader
     },
     {
       label: 'Data',
+      href: '/settings/data',
       icon: faDatabase
     },
     {
       label: 'Statistics',
+      href: '/settings/statistics',
       icon: faClock
     }
   ];
@@ -33,9 +45,9 @@
         <HeaderButton
           faIcon={settingItem.icon}
           label={settingItem.label}
-          selected={activeSettings === settingItem.label}
+          selected={activeRouteId === settingItem.href}
           variant="tab"
-          onclick={() => (activeSettings = settingItem.label)}
+          onclick={() => onselect?.(settingItem.href)}
         />
       {/each}
     </div>
