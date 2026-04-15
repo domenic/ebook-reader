@@ -46,13 +46,13 @@
   import Fa from 'svelte-fa';
 
   interface Props {
-    aggregratedStatistics: BookStatistic[];
+    aggregatedStatistics: BookStatistic[];
     statisticsDateRangeLabel: string;
     ondelete?: (request: StatisticsDeleteRequest) => void;
     onedit?: (request: StatisticsEditRequest) => void;
   }
 
-  let { aggregratedStatistics, statisticsDateRangeLabel, ondelete, onedit }: Props = $props();
+  let { aggregatedStatistics, statisticsDateRangeLabel, ondelete, onedit }: Props = $props();
 
   const statisticsSummaryBaseRowRem = 3;
   const statisticsSummaryBaseRowGap = 1.5;
@@ -85,7 +85,7 @@
 
   // Derive sorted data from the raw statistics + sort settings
   let sortedData = $derived.by(() => {
-    const data = [...aggregratedStatistics];
+    const data = [...aggregatedStatistics];
     data.sort(sortTable);
     return data;
   });
@@ -112,7 +112,7 @@
 
   // When new data arrives, reset edit mode and recalculate rows per page
   $effect(() => {
-    if (aggregratedStatistics) {
+    if (aggregatedStatistics) {
       untrack(() => {
         setRowInEditMode();
         updateRowsPerPage();
@@ -321,7 +321,7 @@
 </script>
 
 {$resizeHandler$ ?? ''}
-<div class="my-4" class:hidden={!aggregratedStatistics.length}>
+<div class="my-4" class:hidden={!aggregatedStatistics.length}>
   Data for {statisticsDateRangeLabel}
 </div>
 <div

@@ -58,7 +58,7 @@
   import Fa from 'svelte-fa';
 
   interface StatisticsShellViewProps {
-    aggregratedStatistics: BookStatistic[];
+    aggregatedStatistics: BookStatistic[];
     handleDeleteRequest: (request: StatisticsDeleteRequest) => Promise<void>;
     handleEditRequest: (request: StatisticsEditRequest) => Promise<void>;
     readingGoals: BooksDbReadingGoal[];
@@ -77,7 +77,7 @@
     tap((dataKeyToCopy) => {
       const statistics =
         $lastPrimaryReadingDataAggregationMode$ === StatisticsReadingDataAggregationMode.TITLE
-          ? aggregratedStatistics
+          ? aggregatedStatistics
           : getAggregatedStatistics(StatisticsReadingDataAggregationMode.TITLE);
 
       let logKey = '';
@@ -268,7 +268,7 @@
   let titlesInStatisticsDateRange = $state(new Set<string>());
   let statisticsData: BookStatistic[] = $state([]);
   let statisticsForSelection: BookStatistic[] = $state([]);
-  let aggregratedStatistics: BookStatistic[] = $state([]);
+  let aggregatedStatistics: BookStatistic[] = $state([]);
   let readingGoals: BooksDbReadingGoal[] = $state([]);
 
   let statisticsDateRangeLabel = $derived(
@@ -574,7 +574,7 @@
       filterStatisticsForSelection(statistic, newTitleFilterForStatisticsSet)
     );
     titlesInStatisticsDateRange = newTitleFilterForStatisticsSet;
-    aggregratedStatistics = [...getAggregatedStatistics($lastPrimaryReadingDataAggregationMode$)];
+    aggregatedStatistics = [...getAggregatedStatistics($lastPrimaryReadingDataAggregationMode$)];
   }
 
   function getAggregatedStatistics(
@@ -706,7 +706,7 @@
   </div>
 {:else}
   {@render children?.({
-    aggregratedStatistics,
+    aggregatedStatistics,
     handleDeleteRequest,
     handleEditRequest,
     readingGoals,

@@ -2,11 +2,12 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { getValidStatisticsRoute } from '$lib/components/statistics/statistics-route';
+  import { pagePath } from '$lib/data/env';
   import { lastStatisticsRoute$ } from '$lib/data/store';
   import { formatPageTitle } from '$lib/functions/format-page-title';
 
   onMount(() => {
-    goto(getValidStatisticsRoute($lastStatisticsRoute$), {
+    goto(`${pagePath}${getValidStatisticsRoute($lastStatisticsRoute$)}`, {
       replaceState: true,
       noScroll: true,
       keepFocus: true

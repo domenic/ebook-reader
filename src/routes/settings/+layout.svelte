@@ -6,6 +6,7 @@
   import SettingsHeader from '$lib/components/settings/settings-header.svelte';
   import type { SettingsRoute } from '$lib/components/settings/settings-route';
   import { pxScreen } from '$lib/css-classes';
+  import { pagePath } from '$lib/data/env';
 
   interface Props {
     children?: Snippet;
@@ -20,7 +21,7 @@
       return;
     }
 
-    goto(href, { keepFocus: true, noScroll: true });
+    goto(`${pagePath}${href}`, { keepFocus: true, noScroll: true });
   }
 </script>
 

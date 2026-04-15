@@ -172,7 +172,7 @@
   <title>{formatPageTitle('Reader Settings')}</title>
 </svelte:head>
 
-<div class="grid grid-cols-1 items-center sm:grid-cols-2 sm:gap-6 lg:md:gap-8 lg:grid-cols-3">
+<div class="grid grid-cols-1 items-center sm:grid-cols-2 sm:gap-6 lg:gap-8 lg:grid-cols-3">
   <div class="lg:col-span-2">
     <SettingsItemGroup title="Theme">
       <ButtonToggleGroup

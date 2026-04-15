@@ -86,7 +86,7 @@
   <title>{formatPageTitle('Statistics Settings')}</title>
 </svelte:head>
 
-<div class="grid grid-cols-1 items-center sm:grid-cols-2 sm:gap-6 lg:md:gap-8 lg:grid-cols-3">
+<div class="grid grid-cols-1 items-center sm:grid-cols-2 sm:gap-6 lg:gap-8 lg:grid-cols-3">
   <SettingsItemGroup
     title="Keep Local Data on Deletion"
     tooltip={'Determines if local statistics will be deleted or not when removing a local book copy'}
@@ -96,9 +96,8 @@
         options={optionsForToggle}
         bind:selectedOptionId={$keepLocalStatisticsOnDeletion$}
       />
-      <div
-        tabindex="0"
-        role="button"
+      <button
+        type="button"
         class="ml-4 hover:underline"
         onclick={() => {
           showSpinner = true;
@@ -112,10 +111,9 @@
             )
             .finally(() => (showSpinner = false));
         }}
-        onkeyup={() => {}}
       >
         Clear Zombie Statistics
-      </div>
+      </button>
     </div>
   </SettingsItemGroup>
   <SettingsItemGroup
@@ -188,7 +186,7 @@
     </SettingsItemGroup>
     <SettingsItemGroup
       title="Autostart tracker (sec)"
-      tooltip={'Time in seconds without a change to the character count after which the tracker will initially auto start (0 = disabled, higher value recommended to avoid racing conditions)'}
+      tooltip={'Time in seconds without a change to the character count after which the tracker will initially auto start (0 = disabled, higher value recommended to avoid race conditions)'}
     >
       <input
         type="number"

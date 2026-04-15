@@ -10,13 +10,13 @@
 
 <StatisticsShell>
   {#snippet children({
-    aggregratedStatistics,
+    aggregatedStatistics,
     handleDeleteRequest,
     handleEditRequest,
     statisticsDateRangeLabel
   })}
     <StatisticsSummary
-      {aggregratedStatistics}
+      {aggregatedStatistics}
       {statisticsDateRangeLabel}
       ondelete={handleDeleteRequest}
       onedit={handleEditRequest}

@@ -18,6 +18,7 @@
     type StatisticsDateChange
   } from '$lib/components/statistics/statistics-types';
   import { pxScreen } from '$lib/css-classes';
+  import { pagePath } from '$lib/data/env';
   import {
     lastStartDayOfWeek$,
     lastStatisticsEndDate$,
@@ -141,7 +142,7 @@
       return;
     }
 
-    goto(href, { keepFocus: true, noScroll: true });
+    goto(`${pagePath}${href}`, { keepFocus: true, noScroll: true });
   }
 </script>
 
